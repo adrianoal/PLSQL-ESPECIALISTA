@@ -321,6 +321,74 @@ END;
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+12.Variável Bind
+
+
+ * Variável tipo BIND é uma variável que vc declara em um ambiente externo ao bloco, e então 
+   utiliza para passar valores em tempo de execução, para um ou mais blocos PL/SQL que podem
+   utilizá-la como qualquer outra variável.
+  
+ * Vc pode referenciar variáveis BIND declaradas em um ambiente externo ao bloco dentro do 
+   bloco PL/SQL. 
+
+ * No ambiente do Oracle SQL*Plus ou do Oracle SQL Developer, para detectar uma variável BIND, vc 
+   utiliza o comando VARIABLE.
+ 
+ 
+ REFERENCIANDO VARIÁVEIS BIND:
+ -----------------------------
+ 
+ * Para referenciar variáveis BIND, vc deve prefixar a referência com o caractere(:) para 
+   distinguir de variáveis declaradas no bloco PL/SQL.
+
+--
+-- Seção 6 - Declaração de Identificadores - Variáveis e Constantes
+--
+-- Aula 4 - Variável Bind
+--
+
+-- Utilizando Variável Bind
+
+SET SERVEROUTPUT ON
+
+VARIABLE gmedia NUMBER -- Variavel tipo BIND deve ser declarada fora de sessao DECLARE.
+DECLARE
+  vnumero1  NUMBER(11,2) := 2000;
+  vnumero2  NUMBER(11,2) := 5000;
+  
+BEGIN  
+  :gmedia := (vnumero1 + vnumero2) / 2; -- Referenciando a Variável BIND --> :gmedia
+  DBMS_OUTPUT.PUT_LINE('Media = ' || TO_CHAR(:gmedia));
+EXCEPTION
+  WHEN OTHERS 
+  THEN 
+    DBMS_OUTPUT.PUT_LINE('Erro Oracle: ' || SQLCODE || SQLERRM);
+END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
