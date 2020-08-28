@@ -716,9 +716,125 @@ END;
 ---------------------------------------------------------------------------------------------------			
 21.Utilizando o comando DELETE no PL/SQL 
 
+---
+-- Seção 8 - Utilizando comandos SQL no PL/SQL
+--
+-- Aula 5 - Utilizando o comando DELETE no PL/SQL
+--
+
+-- Utilizando o comando DELETE no PL/SQL
+
+-- DELETE no PL/SQL
+
+SET SERVEROUTPUT ON
+DECLARE
+   vEmployee_id  employees.employee_id%type := 207;
+BEGIN
+   DELETE FROM employees 
+   WHERE  employee_id =  vEmployee_id;
+   COMMIT;  
+END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+22.Controlando Transações de banco de dados no PL/SQL
+
+ * Uma transação consiste de um conjunto de comando DML(SELECT, INSERT, DELETE, UPDATE) que 
+   formam uma unidade lógica de trabalho.
+ Obs: O conceito de uma transação é, ou vc deseja efetivar (COMMIT), ou deseja desfazer (ROLLBACK).
+ 
+ * Uma transação de banco de dados consiste em:
+   - Um conjunto de comando DML
+   - Um comando DDL -- CREATE/ ALTER / DROP / DESABLE --> Aqui o commit é automatico
+   - Um comando DCL -- GRANT / REVOKE        --> Aqui o commit é automatico
+
+
+ -- INICIO DE UMA TRANSAÇÃO NO ORACLE:
+ -------------------------------------
+   
+ * No DB Oracle uma transação começa quando se conecta e um comando SQL DML é executado.
+
+ * Após um comando COMMIT, um comando SQL DML é executado.
+
+ * Após um comando ROLLBACK, um comando SQL DML é executado.
+
+ 
+
+ -- FIM DE UMA TRANSAÇÃO NO ORACLE:
+ ----------------------------------
+ 
+ * Uma transação termina com um dos seguintes eventos:
+ 
+ * COMMIT
+ * ROLLBACK
+ * DDL ou DCL (Executa um COMMIT automático)
+ * Quando o usuário encerra a sessão (disconecta) no SQL Developer, SQL*Plus, e etc.
+ * Crash do sistema (Sistema operacional, rede, banco de dados e etc). Nestes casos sofrerá um ROLLBACK
+ 
+ SAVEPOINT --> É um ponto de controle, uma marca na transação.
+			   É recurso disponível que não é muito usado.
+			   
+
+---
+-- Seção 8 - Utilizando comandos SQL no PL/SQL
+--
+-- Aula 6 - Controlando Transações do Banco de Dados
+--
+
+-- Controlando Transações do Banco de Dados
+
+SET SERVEROUTPUT ON
+DECLARE
+   vEmployee_id    employees.employee_id%type := 150;
+BEGIN
+   UPDATE employees 
+   SET    salary = 15000
+   WHERE  employee_id =  vEmployee_id;
+   COMMIT;  
+END;
+
+SET SERVEROUTPUT ON
+DECLARE
+   vEmployee_id    employees.employee_id%type := 150;
+BEGIN
+   UPDATE employees 
+   SET    salary = 20000
+   WHERE  employee_id =  vEmployee_id;
+   ROLLBACK;  
+END;
 
 
 
+
+BEGIN
+    INSERT INTO employees 
+    (employee_id, first_name, last_name, email, phone_number, hire_date, job_id, salary, commission_pct, manager_id, department_id)
+    VALUES 
+    (employees_seq.nextval, 'Kobe', 'Bryant', 'KBRYANT', '515.123.45568', SYSDATE, 'IT_PROG', 15000, 0.4, 103, 60);
+    
+    SAVEPOINT INSERTOK;
+    
+    UPDATE employees 
+    SET    salary = 30000
+    WHERE  job_id = 'IT_PROG';
+    
+    ROLLBACK TO INSERTOK;  -- Aqui ele descarta tudo que foi feito a partir do savepoint, portanto o INSERT sera mantido.
+    COMMIT; -- A transacao so vai ser efetivada apos esse commit.
+END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+			   
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+    
+ 
 
 
 
