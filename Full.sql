@@ -445,7 +445,66 @@ END;
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+15.Blocos Aninhados e Escopo de Identificadores (Variáveis e Constantes)
 
+ BLOCOS ANINHADOS:
+ -----------------
+ 
+ * Uma das vantagens que o PL/SQL possui é a possibilidade de criar e aninhar blocos 
+ 
+ * Vc pode dividir uma parte lógica de um bloco em Sub-blocos
+ 
+ * A Seção EXCEPTION tbm pode conter Blocos e Sub-blocos aninhados ou seja,
+   (Cada bloco pode conter a sua seção EXCEPTION)
+ 
+
+--
+-- Seção 7 - Sintaxe e Diretrizes de um Bloco PL/SQL
+--
+-- Aula 3 - Blocos Aninhados e Escopo de Identificadores (variáveis e constantes)
+--
+
+-- Escopo de Identificadores e Blocos Aninhados
+
+SET SERVEROUTPUT ON
+DECLARE
+  vbloco1 VARCHAR2(20) := 'Bloco 1';
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 1: ' || vbloco1);
+  -- Se voce referencia vbloco2 aqui ocorrerá Erro
+      DECLARE
+        vbloco2 VARCHAR2(20) := 'Bloco 2';
+      BEGIN
+        DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 1: ' || vbloco1);
+        DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 2: ' || vbloco2);
+      END;
+  DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 1: ' || vbloco1);
+  -- Se voce referencia vbloco2 aqui ocorrerá Erro
+END;
+
+
+-- PODEMOS IDENTIFICAR OS BLOCOS ATRAVES DE LABELS: 
+-- Identificando Blocos através de Labels
+
+-- EXEMPLO:
+
+
+<<BLOCO1>>
+DECLARE
+  vbloco1 VARCHAR2(20) := 'Bloco 1';
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 1: ' || bloco1.vbloco1);
+  -- Se voce referencia vbloco2 aqui ocorrerá Erro
+      <<BLOCO2>>
+      DECLARE
+        vbloco2 VARCHAR2(20) := 'Bloco 2';
+      BEGIN
+        DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 1: ' || bloco1.vbloco1);
+        DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 2: ' || bloco2.vbloco2);
+      END;
+  DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 1: ' || bloco1.vbloco1);
+  -- Se voce referencia vbloco2 aqui ocorrerá Erro
+END;
 
 
 
