@@ -257,8 +257,70 @@ END;
 ---------------------------------------------------------------------------------------------------			
 11.Tipos de Dados no PL/SQL Datatypes
 
+--
+-- Seção 6 - Declaração de Identificadores - Variáveis e Constantes
+--
+-- Aula 3 - Tipos de Dados no PL/SQL - Datatypes
+--
+
+-- Declarando Variáveis utilizando os principais Tipos de Dados
+
+-- Tipo de dados ESCALAR podem ser classificados em quatro categorias:
+
+-- NUMÉRICO (P,S) --> Precição/Escala máximo de dígitos p/ naumber é 38
+-- CARACTERE
+-- DATA
+-- BOOLEANO 
 
 
+-- Obs: No SQL o tamanho máximo para VARCHAR é de apenas 2.000 bytes
+--		No SQL o tamanho máximo para VARCHAR2 é de apenas 4.000 bytes
+--		No SQL o tamanho máximo para LONG é de apenas 2G -1 byte
+
+SET SERVEROUTPUT ON
+DECLARE
+  vNumero              NUMBER(11,2) := 1200.50;
+  vCaracterTamFixo     CHAR(100) := 'Texto de Tamanho Fixo de até 32767 bytes';
+  vCaracterTamVariavel VARCHAR2(100) := 'Texto Tamanho variável de até 32767 bytes'; 
+  vBooleano            BOOLEAN := TRUE;
+  vData                DATE := sysdate;
+  vLong                LONG := 'Texto Tamanho variável de até 32760 bytes';
+  vRowid               ROWID; -- Pseudocoluna, endereco logico de uma linha, uma string de 18 caracteres
+  vTimestamp           TIMESTAMP := systimestamp; -- uma alternativa para o tipo DATE, armazena data com até 9 dig de segundos apos o decimal
+  vTimestamptz         TIMESTAMP WITH TIME ZONE := systimestamp; -- Armazena a data de acordo com fuso horario do servidor do BD. Se estiver em NY, horario de la
+  vCaracterTamFixoUniversal     NCHAR(100) := 'Texto de Tamanho Fixo Universal de até 32767 bytes'; -- Suporta qualquer lingua do mundo
+  vCaracterTamVariavelUniversal NVARCHAR2(100) := 'Texto Tamanho variável Universal de até 32767 bytes'; -- Suporta qualquer lingua do mundo
+  vNumeroInteiro       BINARY_INTEGER := 1200; -- P/ armazenamento de numeros inteiros, sem decimais. Faixa entre -2.147.483.648 até 2.147483.647 como 32 bits ou 4 bytes
+  vNumeroFloat         BINARY_FLOAT := 15000000; -- Alternativa ao number. Number fica armazenado utilizando a notacao decimal. BINARY_FLOAT fica armazenado com notacao ponto flutuante. Precisao (32 bits)
+  vNumeroDouble        BINARY_DOUBLE := 15000000; -- Alternativa ao number. Number fica armazenado utilizando a notacao decimal. BINARY_DOUBLE fica armazenado com notacao ponto flutuante. Precisao (64 bits)
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Numero = ' ||   vNumero);
+  DBMS_OUTPUT.PUT_LINE('String Caracteres Tam Fixo = ' || vCaracterTamFixo );
+  DBMS_OUTPUT.PUT_LINE('String Caracteres Tam Variável = ' || vCaracterTamVariavel );
+  IF  vBooleano = TRUE
+  THEN 
+    DBMS_OUTPUT.PUT_LINE('Booleano = ' || 'TRUE');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('Booleano = ' || 'FALSE OR NULL');
+  END IF;
+  DBMS_OUTPUT.PUT_LINE('Data = ' || vData);
+  DBMS_OUTPUT.PUT_LINE('Long = ' || vLong );
+  SELECT rowid
+  INTO   vRowid
+  FROM   employees
+  WHERE  first_name = 'Steven' AND last_name = 'King';
+  DBMS_OUTPUT.PUT_LINE('Rowid = ' || vRowid );
+  DBMS_OUTPUT.PUT_LINE('Timestamp = ' || vTimestamp);
+  DBMS_OUTPUT.PUT_LINE('Timestamp with time zone= ' || vTimestamptz);
+  DBMS_OUTPUT.PUT_LINE('String Caracteres Tam Fixo = ' || vCaracterTamFixoUniversal );
+  DBMS_OUTPUT.PUT_LINE('String Caracteres Tam Variável = ' || vCaracterTamVariavelUniversal );
+  DBMS_OUTPUT.PUT_LINE('Numero Inteiro = ' || vNumeroInteiro);
+  DBMS_OUTPUT.PUT_LINE('Numero Float = ' || vNumeroFloat);
+  DBMS_OUTPUT.PUT_LINE('Numero Double = ' || vNumeroDouble);
+END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
 
 
 
