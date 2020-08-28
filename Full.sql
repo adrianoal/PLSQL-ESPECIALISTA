@@ -520,23 +520,68 @@ END;
 -- Exemplo de uso dos Padrões de codificação sugeridos
 
 SET SERVEROUTPUT ON
+<<BLOCO1>>
 DECLARE
   vBloco1 VARCHAR2(20) := 'Bloco 1';
 BEGIN
   DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 1: ' || vBloco1);
   -- Se voce referencia vbloco2 aqui ocorrerá Erro
-  DECLARE
-    vBloco2 VARCHAR2(20) := 'Bloco 2';
-  BEGIN
-    DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 1: ' || vBloco1);
-    DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 2: ' || vBloco2);
-  END;
+  
+	  <<BOLCO2>>
+	  DECLARE
+		vBloco2 VARCHAR2(20) := 'Bloco 2';
+	  BEGIN
+		DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 1: ' || vBloco1);
+		DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 2: ' || vBloco2);
+	  END;
+	  
   DBMS_OUTPUT.PUT_LINE('Referenciando variável do Bloco 1: ' || vBloco1);
   -- Se voce referencia vbloco2 aqui ocorrerá Erro
 END;
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+Seção 8:PL/SQL Fundamentos - Utilizando comandos SQL no PL/SQL
+
+17.Utilizando comandos SQL no PL/SQL
+
+
+ * Vc pode utilizar o comando SELECT para popular variáveis com valores recuperados a partir 
+   de uma linha de uma tabela.
+   
+ * O PL/SQL suporta completamente os comandos DML e os comandos de controle de transação do SQL.
+ 
+ 
+ BLOCO PL/SQL X TRANSAÇÃO DO BANCO DE DADOS:
+ -------------------------------------------
+ 
+ * Um bloco PL/SQL não é uma unidade de transação. (BEGIN e END, não tem nada a ver com uma 
+   transação, é apenas para controle do código)
+   
+   
+ * Os comandos COMMIT, SAVEPOINT  e ROLLBACK são independentes do inicio e fim do bloco PL/SQL,
+   no entanto, vc pode executar estes comandos dentro de um bloco.
+   
+ * O PL/SQL não suporta a execução direta de comandos DDL e DCL
+
+ * Para executar um comando DDL ou DCL no bloco PL/SQL vc precisa utilizar SQL Dinâmico. 
+     SQL Dinâmico --> (Execute IMMEDIATE)
+
+  
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+Seção 8:PL/SQL Fundamentos - 17.Utilizando comandos SQL no PL/SQL
+
+
+
+
+
+
+
+
+
+
+
 
 
 
