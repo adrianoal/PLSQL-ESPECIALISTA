@@ -862,17 +862,92 @@ ROLLBACK;
  
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+Seção 9:PL/SQL Fundamentos - Estruturas de Controle
+
+24.Operadores PL/SQL e Regra de precedência
 
 
+ FOREMATO:																RESULTADO:
+ ---------																----------
+	+																	OP. Soma
+	-																	OP. Subtração
+	*																	OP. Multiplicação
+	/																	OP. Divisão
+	**																	OP. Exponeciação
+	NOT																	OP. Negação Lógica
+	=, >, <, <=, >=, IS, NULL, LIKE, BETWEEN, IN, !=, <>, ^=, ~=		OP. de Comparação
+	AND 																OP. Lógico AND
+	OR																	OP. Lógico OR
+	
+	
+ -- REGRA DE PRECEDÊNCIA DO PL/SQL:
+ ----------------------------------
+ Obs: Resolve o que encontrar primeiro da esquerda p/ direita
+ 
+ Ordem	Operador
+ 1		**
+ 2		+,-
+ 3		*,/
+ 4		+,-,||
+ 5		=, <, >, <=, >=, <>, !=, ~=, ^=, BETWEEN, IN, IS NULL, LIKE 
+ 6 		AND
+ 7		NOT 
+ 8		OR
  
  
+ Utilizando parentes para alterar sobrepor a regra de precedência:
+ -----------------------------------------------------------------
+ 
+ * Utilize parênteses p/ sobrepor a regra de precedência dos operadores 
+ 
+ * Tudo que estiver entre parênteses será resolvido primeiro
+ 
+ * Se vc aninhar parênteses, eles serão resolvidos de dentro p/ fora
  
  
- 
+ -- EXEMPLO: 
+ -----------
    
-    
- 
+    --
+-- Seção 9 - Estruturas de Controle 
+--
+-- Aula 1 - Operadores PL/SQL
+--
 
+-- Operadores PL/SQL - Com erro no cálculo devido ao mal uso da regra de precedência
+
+SET SERVEROUTPUT ON
+DECLARE
+   vNota1     NUMBER(11,2) := 7.0;
+   vNota2     NUMBER(11,2) := 6.0;
+   vNota3     NUMBER(11,2) := 9.0;
+   vNota4     NUMBER(11,2) := 6.0;
+   vMedia     NUMBER(11,2);
+   
+BEGIN
+  vMedia := vNota1 + vNota2 + vNota3 + vNota4 / 4; -- Resultado errado, correcao abaixo. 
+  DBMS_OUTPUT.PUT_LINE('Media = ' || vMedia);   
+END;
+
+-- Corrigindo o cálculo da média sobrepondo a regra de precedência utilizando parenteses
+
+SET SERVEROUTPUT ON
+DECLARE
+   vNota1     NUMBER(11,2) := 7.0;
+   vNota2     NUMBER(11,2) := 6.0;
+   vNota3     NUMBER(11,2) := 9.0;
+   vNota4     NUMBER(11,2) := 6.0;
+   vMedia     NUMBER(11,2);
+   
+BEGIN
+  vMedia := (vNota1 + vNota2 + vNota3 + vNota4) / 4;
+  DBMS_OUTPUT.PUT_LINE('Media = ' || vMedia);   
+END;
+
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+Secao 9:PL/SQL Fundamentos -24.Operadores PL/SQL e Regra de precedencia
 
 
 
