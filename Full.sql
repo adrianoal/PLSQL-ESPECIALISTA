@@ -1102,7 +1102,50 @@ BEGIN
  
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+27.LOOP Básico 
 
+ -- CONTROLANDO UM LOOP DE DOMANDOS:
+ -----------------------------------
+ 
+ * O PL/SQL fornece diversos comandos de estruturas de LOOP para repetir um comando ou 
+   sequencia de comandos várias vezes.
+   
+ * LOOP básico --> Fornece ações repetitivas sem condições globais
+
+ * FOR LOOP --> Fornece controle de repetições de ações baseado em um contador
+
+ * WHILE LOOP --> Fornce controle de repetições de ações baseado em uma condição
+
+ * O comando EXIT encerra um LOOP em qualquer tipo de contrução 
+   Utilizando o comando EXIT, o controle passa para o próximo comando após o comando END LOOP. 
+
+
+
+
+--
+-- Seção 9 - Estruturas de Controle 
+--
+-- Aula 4 - LOOP Básico
+--
+
+-- LOOP Básico
+
+SET SERVEROUTPUT ON
+ACCEPT pLimite PROMPT 'Digite o valor do limite: '
+DECLARE
+  vNumero  NUMBER(38) := 1;
+  vLimite  NUMBER(38) := &pLimite;
+BEGIN
+-- Imprimindo números de 1 até o limite
+LOOP 
+  DBMS_OUTPUT.PUT_LINE('Número = ' || to_char(vNumero));
+  EXIT WHEN vNumero = vLimite;
+  vNumero := vNumero + 1;
+END LOOP;
+END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
 
 
 
