@@ -1233,19 +1233,84 @@ SET SERVEROUTPUT ON
 DECLARE
   vTotal   NUMBER(38) :=  1;
 BEGIN
-<<LOOP1>>
-FOR i IN 1..8 LOOP
-    DBMS_OUTPUT.PUT_LINE('I =  ' || to_char(i));
-    <<LOOP2>>
-    FOR j IN 1..8 LOOP
-      DBMS_OUTPUT.PUT_LINE('J =  ' || to_char(j));
-      DBMS_OUTPUT.PUT_LINE('Total =  ' || to_char(vTotal,'99G999G999G999G999G999G999G999D99'));
-      vTotal := vTotal * 2;
-      EXIT LOOP1 WHEN vtotal > 1000000000000000;
-    END LOOP;
-END LOOP;
+	<<LOOP1>>
+	FOR i IN 1..8 LOOP
+		DBMS_OUTPUT.PUT_LINE('I =  ' || to_char(i));
+		
+			<<LOOP2>>
+			FOR j IN 1..8 LOOP
+			  DBMS_OUTPUT.PUT_LINE('J =  ' || to_char(j));
+			  DBMS_OUTPUT.PUT_LINE('Total =  ' || to_char(vTotal,'99G999G999G999G999G999G999G999D99'));
+			  vTotal := vTotal * 2;
+			  EXIT LOOP1 WHEN vtotal > 1000000000000000;
+			END LOOP;
+	END LOOP;
 DBMS_OUTPUT.PUT_LINE('Total Final =  ' || to_char(vTotal,'99G999G999G999G999G999G999G999D99'));
 END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+Seção 10: PL/SQL Fundamentos - Tipos Compostos - Variável Tipo PL/SQL RECORD
+
+31.Variável Tipo PL/SQL Record 
+
+ PL/SQL Record --> É uma estrutura de campos na memória.
+ 
+ * PL/SQL Record é um grupo de itens(campos) de dados relacionados armazenados em campos, 
+   cada um com seu próprio nome e tipo de dados.
+   
+ * Um PL/SQL Record que contém campos como o nome, cidade e data de admissão de um cliente
+   permite tratar os dados como uma unidade lógica.
+
+ * Quando vc declara um tipo RECORD para estes campos, eles podem ser manipulados como uma 
+   unidade.
+ 
+ PL/SQL RECORDS - DIRETRIZES:
+ ----------------------------
+ 
+ * Cada registro definido pode possuir tantos campos quanto necessários
+ 
+ * Campos podem ser atribuídos valores iniciais e podem ser definidos como NOT NULL
+ 
+ * Campos sem valores iniciais são inicializados com NULL
+ 
+ * A palavra chave DEFAULT tbm podem ser utilizada quando definido campos
+ 
+
+--
+-- Seção 10 - Tipos Compostos - Variável Tipo PL/SQL Record
+--
+-- Aula 1 - Variável Tipo PL/SQL Record
+--
+
+-- Criando um PL/SQL Record 
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+ACCEPT pemployee_id PROMPT 'Digite o Id do empregado: '
+DECLARE
+TYPE  employee_record_type IS RECORD 
+          (employee_id   employees.employee_id%type,
+           first_name    employees.first_name%type,
+           last_name     employees.last_name%type,
+           email         employees.email%type,
+           phone_number  employees.phone_number%type);
+	  employee_record  employee_record_type; -- criado a variavel e o tipo q ela implementa
+
+BEGIN
+	SELECT  employee_id, first_name, last_name, email, phone_number
+		INTO    employee_record
+		FROM    employees
+		WHERE   employee_id = &pemployee_id;
+		
+		DBMS_OUTPUT.PUT_LINE(employee_record.employee_id || ' - ' || 
+						 employee_record.first_name || ' - ' || 
+						 employee_record.last_name || ' - ' || 
+						 employee_record.phone_number);
+END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
 
 
 
