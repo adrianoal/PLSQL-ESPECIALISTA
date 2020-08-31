@@ -1343,13 +1343,115 @@ END;
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+Seção 11:PL/SQL Fundamentos - Tipos Compostos - Collectons
+
+33.Collections - Associative Arrary
+
+ -- O QUE É UMA COLLECTION?
+ --------------------------
+ 
+ * Coestruturas utilizadas para gerenciamento de múltiplas linhas de dados
+ * Collections são listas (Vetores de uma dimensão), portanto, fica na memória.
+ 
+ -- TIPOS DE COLLECTIONS:
+ ------------------------
+ 
+ * Associative Arrays
+ * Nested Table 
+ * Varray 
+ 
+ 
+ 
+ -- ASSOCIATIVE ARRAY:
+ ---------------------
+ 
+ * Associative arrys são estruturas unidimensionais(Uma dimensão) de tipos de dados Oracle,
+   registros ou tipo definidos pelo usuário.
+   Ex: Varchar2, number, date e etc.
+   
+ * No Oracle na versão 7 é conhecido como PL/SQL Tables
+ * No Oracle nas versões 8 e 9i é conhecido como Index-by-tables 
+ * Atualmente conhecido como Associative Array 
+ 
+ * Pode ser indexada por valores numéricos ou caracter, permitindo buracos na numeração 
+   do índice
+   
+ * É semelhante a um vetor, não podendo ser armazenado no banco de dados   
+   -- Obs: Não é armazenado no DB, fica na memória do PL/SQL
+   
+ * Basta atribuir um valor para a ocorrencia do Associative Array 
+ 
+ * Pode ser indexado com qualquer valor númerico,o q significa valores negativos, positivos ou
+   tbm o zero.
+   
+ * Pode ser indexado tbm por strings de caracteres
+
+ * Obrigatório a cláusula INDEX BY na definição do tipo
 
 
+ -- SINTAXE:
+ -----------
+ 
+DECLARE 
+TYPE nome_tipo_tabela  --> Dar um nome para o tipo
+IS TABLE OF mome_tabela.nome_coluna%type --> Obs: O associative array na versao 7 era chamado de IS TABLE OF, portanto, permance ate hoje... tipo de dado e tamanho: Ex. varchar2(100)/ number(11)
+INDEX BY BINARY_INTEGER --> É obrigatorio a clausula INDEX BY se for numerico --> BINARY_INTEGER.. Se o Index for uma string de caracteres varchar2();
+
+-- Declarar uma variável no padrão, p/ implementar o tipo do array 
+nome_variavel_table    nome_tipo_table
 
 
+ -- REFERENCIANDO UM ASSOCIATIVE ARRAY - SINTAXE:
+ ------------------------------------------------
+ 
+ BEGIN
+ nome_variavel_table(indice):= valor | expressao; 
+ 
+-- Exemplo Prático:
+-------------------
+--
+-- Seção 11 - Tipos Compostos - Collections 
+--
+-- Aula 1 - Collections - Associative Array
+--
+
+-- Collections - Associative Array
+
+/*
+SET VERIFY OFF: 
+-- Use o comando VERIFY para alternar o visor da variável de substituição, 
+   ambos antes e depois do SQL Developer substitui variáveis por valores:
+*/
 
 
+ -- O ARRAY serve para eu guardar informacoes que vou usar depois
+ 
+SET SERVEROUTPUT ON
+SET VERIFY OFF 
+DECLARE
+  TYPE Numero_Table_Type IS TABLE OF NUMBER(2) --> IS TABLE OF p/ associative arrary
+  INDEX BY BINARY_INTEGER; -- E obrigatorio essa clausula
+  Numero_table  Numero_Table_Type; -- Declaracao do Array
+BEGIN
+  -- Armazena números de 1 a 10 em um Associative Array
+  FOR i IN 1..10
+  
+	  LOOP
+		Numero_Table(i) := i;
+	  END LOOP;
+	  -- Programa faz uma série de coisas...
+	  -- Lê o Associative Array e imprime os números armazenados
+	  FOR i IN 1..10
+	  LOOP
+		DBMS_OUTPUT.PUT_LINE('Associative Array: Indice = ' 
+							 || TO_CHAR(i) || -- aqui imprime o valor do indice
+							 ', Valor = ' ||
+							 TO_CHAR(Numero_Table(I))); -- aqui imprime o valor do associative array
+  END LOOP;
+END;
 
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
 
 
 
