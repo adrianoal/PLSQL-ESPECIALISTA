@@ -1357,6 +1357,10 @@ Seção 11:PL/SQL Fundamentos - Tipos Compostos - Collectons
  ------------------------
  
  * Associative Arrays
+				Collections - Associative Array
+				Associative Array of Records - Bulk Collect (Herda as caracteristica da tabela)
+					 
+					 
  * Nested Table 
  * Varray 
  
@@ -1517,6 +1521,91 @@ END;
  Em caso de dúvidas, utilizar um cursor.	  
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+35.Collections - Nested Table 
+
+
+ * Nested Table são estruturas unidimensionais de tipos de dados Oracle, registros ou tipos 
+   definidos pelo usuário 
+   
+ * Introduzida no Oracle versão 8.
+   Inicialmente definida como sendo um vetor inicialmente sem espaços vazios na definição,
+   mas pode se tornar esparsa(perdida, longe, espalhada, distanciada, longínqua) quando 
+   registros forem removidos
+   
+ * Pode ser armazenada em tabelas e acessada por comandos SQL 
+ 
+ * Pode ser dinamicamente estendida
+ 
+ * A diferença do Associative Array é que fica em memória, já o Nested Table pode ser 
+   armazenado em tabela, ou coluna, porém, no caso de coluna isso nunca deve ser feito, 
+   pq viola as regras de normalização de Dados (1FN)--> Atributos multi-valorados
+   
+ -- DIRETRIZES:
+ --------------
+ 
+ * Elementos precisam ser alocados com o método EXTEND para serem definidos 
+ 
+ * Indexada com valores positivos(de 1 até N)
+ 
+ * Deve ser inicializada 
+ 
+ * Sem a cláusula INDEX BY na declaração do tipo
+ 
+
+ -- SINTAXE:
+ -----------
+ 
+DECLARE
+TYPE nome_table
+IS TABLE OF nome_tabela.coluna%type;
+
+
+nome_variavel_table		nome_tipo_table:=nome_tipo_table();-- inicializando sem valor()
+ 
+--------------------------------------------
+-- Exemplo Prático:
+-------------------
+--
+-- Seção 11 - Tipos Compostos - Collections 
+--
+-- Aula 3 - Collections - Nested Table
+--
+
+-- Collections - Nested Table
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  TYPE Numero_Table_Type IS TABLE OF INTEGER(2);
+  Numero_table numero_table_type := numero_table_type();
+BEGIN
+  -- Armazena números de 1 a 10 em um Nested Table
+  FOR i IN 1..10
+  LOOP
+    Numero_Table.extend; -- P/ alocar uma occorencia tem que usar o metodo EXTEND, depois atribui valor, conforme abaixo
+    Numero_Table(i) := i;
+  END LOOP;
+  -- O programa vai fazer muitas coisas...
+  -- Lê o Nested Table e imprime os números armazenados
+  FOR I IN 1..10
+  LOOP
+    DBMS_OUTPUT.PUT_LINE('Nested Table: Indice = ' || TO_CHAR(i) || ', Valor = ' || TO_CHAR(Numero_Table(i)));
+  END LOOP;
+END;
+
+ A Diferenca do NESTED TABLE é que não precisa escrever INDEX BY.... e é obrigatório 
+ inicializar, mesmo que sem valor, mas é necessário inicializar.
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+ 
+   
+ 
+  
+  
+
+    
+
+
 
 
 
