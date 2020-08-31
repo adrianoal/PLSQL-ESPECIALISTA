@@ -1163,14 +1163,41 @@ DECLARE
   vInicio  INTEGER(3) := 1;
   vFim     NUMBER(38) := &pLimite;
 BEGIN
-	FOR i IN vinicio..vfim  LOOP
+	FOR i IN vinicio..vfim  LOOP  -- Pode inverter, comecar do final p/ o inicio
 	  DBMS_OUTPUT.PUT_LINE('Número = ' || to_char(i) );
 	END LOOP;
 END;
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+29.WHILE E LOOP
 
+
+-- Seção 9 - Estruturas de Controle 
+--
+-- Aula 6 - WHILE LOOP
+--
+
+-- WHILE LOOP
+
+SET SERVEROUTPUT ON
+ACCEPT pLimite PROMPT 'Digite o valor do limite: '
+DECLARE
+  vNumero  NUMBER(38) :=  1;
+  vLimite  NUMBER(38) := &pLimite;
+BEGIN
+
+-- Variaveis inicializadas na seção Declare
+
+	WHILE  vNumero <= vLimite LOOP -- Enquanto a condicao for verdadeira, vai ficar executando
+		DBMS_OUTPUT.PUT_LINE('Número =  ' || to_char(vNumero));
+		vNumero := vNUmero + 1;
+	END LOOP;
+END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+30.Controlando LOOPs aninhados 
 
 
 
