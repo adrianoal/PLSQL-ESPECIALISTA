@@ -1452,6 +1452,87 @@ END;
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+34.Associative Array of Records - Bulk Collect 
+
+ * Associative Array de Records --> É quando vc está declarando um associative array e cada  
+   occorencia do associative array vai ter toda a estrutura de campos de uma de um tipo de
+   record.
+
+-- EXEMPLO:   
+-----------
+
+DECLARE 
+TYPE employees_table_type IS TABLE OF employees%ROWTYPE; -- Vai ter toda a estrutura da tabela employees.
+
+employees_table		employees_table_type; -- declaracao da variavel q implementa o array --> employees_table_type 
+
+   
+
+-- EXEMPLO PRATICO:
+-------------------
+
+--
+-- Seção 11 - Tipos Compostos - Collections 
+--
+-- Aula 2 - Associative Array of Records - Bulk Collect
+--
+
+-- Associative Array of Records - Bulk Collect
+
+--
+-- Seção 11 - Tipos Compostos - Collections 
+--
+-- Aula 2 - Associative Array of Records - Bulk Collect
+--
+
+-- Associative Array of Records - Bulk Collect
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  TYPE employees_table_type IS TABLE OF employees%rowtype
+  INDEX BY BINARY_INTEGER;  -- Type Associative Array
+  employees_table  employees_table_type;
+BEGIN
+  SELECT * -- nao usar isso na pratica quado a tabela e muito grande, se for o caso, usar CURSORES
+    BULK COLLECT 
+    INTO employees_table FROM employees;
+    
+  FOR i IN employees_table.first..employees_table.last  -- do primeiro ao ultimo registro da tabela
+  LOOP
+    DBMS_OUTPUT.PUT_LINE(employees_table(i).employee_id || ' - ' || 
+                         employees_table(i).first_name || ' - ' || 
+                         employees_table(i).last_name || ' - ' ||
+                         employees_table(i).phone_number || ' - ' ||
+                         employees_table(i).job_id || ' - ' ||
+                         TO_CHAR(employees_table(i).salary,'99G999G999D99'));   
+  END LOOP;
+END;
+-- employees_table(i).employee_id -- (i) é o indice da ocorrencia
+
+
+ Obs: Tomar cuidado com Associative Array of Records - Bulk Collect, pq toda a tabela vai ficar
+      dentro da memória nessa collection, ou seja, vai consumir muita memória do DB, e isso 
+	  pode causar um problema de performance na aplicação.
+ Em caso de dúvidas, utilizar um cursor.	  
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
