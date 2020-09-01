@@ -1356,12 +1356,15 @@ Seção 11:PL/SQL Fundamentos - Tipos Compostos - Collectons
  -- TIPOS DE COLLECTIONS:
  ------------------------
  
- * Associative Arrays
-				Collections - Associative Array
-				Associative Array of Records - Bulk Collect (Herda as caracteristica da tabela)
+ 	Collections - Associative Array
+	Associative Array of Records - Bulk Collect --> (Herda as caracteristica da tabela)
 					 
 					 
- * Nested Table 
+	Nested Table 
+	Nested Table of Records - Bulk Collect      --> (Herda as caracteristica da tabela)
+    /* Obs: A diferenca entre a collection Associative Array, 
+	   é obrigado inicializar e nao precisa da clausula INDEX BY*/
+	
  * Varray 
  
  
@@ -1523,6 +1526,8 @@ END;
 ---------------------------------------------------------------------------------------------------			
 35.Collections - Nested Table 
 
+ * Nested Table --> É uma alternativa ao associative Array. 
+   O mais utilizado no mercado de trabalho, é o --> associative Array
 
  * Nested Table são estruturas unidimensionais de tipos de dados Oracle, registros ou tipos 
    definidos pelo usuário 
@@ -1577,7 +1582,7 @@ SET SERVEROUTPUT ON
 SET VERIFY OFF
 DECLARE
   TYPE Numero_Table_Type IS TABLE OF INTEGER(2);
-  Numero_table numero_table_type := numero_table_type();
+  Numero_table numero_table_type := numero_table_type(); -- É obrigado inicializar 
 BEGIN
   -- Armazena números de 1 a 10 em um Nested Table
   FOR i IN 1..10
@@ -1594,13 +1599,41 @@ BEGIN
 END;
 
  A Diferenca do NESTED TABLE é que não precisa escrever INDEX BY.... e é obrigatório 
- inicializar, mesmo que sem valor, mas é necessário inicializar.
+ inicializar.
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
- 
-   
- 
+36.Collections - Nested Table of Records - Bulk Collect
+-- Traducao --> Tabela aninhada de coleta em massa de registros 
+--
+-- Seção 11 - Tipos Compostos - Collections 
+--
+-- Aula 4 - Nested Table of Records - Bulk Collect
+--
+
+-- Nested Table of Records - Bulk Collect
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  TYPE employees_table_type IS TABLE OF employees%rowtype;
+  employees_table  employees_table_type := employees_table_type();
+BEGIN
+  SELECT *
+    BULK COLLECT INTO employees_table 
+  FROM employees;
+  FOR i IN employees_table.first..employees_table.last  
+  LOOP
+    DBMS_OUTPUT.PUT_LINE(employees_table(i).employee_id || ' - ' || 
+                         employees_table(i).first_name || ' - ' || 
+                         employees_table(i).last_name || ' - ' ||
+                         employees_table(i).phone_number || ' - ' ||
+                         employees_table(i).job_id || ' - ' ||
+                         TO_CHAR(employees_table(i).salary,'99G999G999D99'));   
+  END LOOP;
+END;
   
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
   
 
     
