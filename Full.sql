@@ -1634,7 +1634,53 @@ END;
   
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
-  
+37.Collections - Varray 
+
+ -- VARRAY:
+ ----------
+ 
+ * Varray é uma outra alternativa ao Associative Array e ao Nested Table.
+ 
+ * Varray são estruturas uni-dimensionais(uma dimensão) de tipos de dados Oracle, registros 
+ ou tipos definidos pelo usuário.
+   
+ * Introduzido no Oracle Versão 8, Semelhante a programação tradicional de vetor
+ 
+ * O Oracle permite que seja de tamanho variável, por isso são chamados VARRAY
+ 
+ * O tamanho máximo deve ser especificado na declaração do tipo
+ 
+ A diferença do Nested Table com o VARRAY é que precisa ser definido um tamanho máximo
+
+--
+-- Aula 5 - Collections - Varray
+--
+
+-- Collections - Varray
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  TYPE Numero_Table_Type IS VARRAY (10) OF INTEGER(2);
+  Numero_table numero_table_type := numero_table_type();
+BEGIN
+  -- Armazena números de 1 a 10 em um Varray
+  FOR i IN 1..10
+  LOOP
+    Numero_Table.extend;
+    Numero_Table(i) := i;
+  END LOOP;
+  -- O programa vai fazer muitas coisas...
+  -- Lê o Varray e imprime os números armazenados
+  FOR i IN 1..10
+  LOOP
+    DBMS_OUTPUT.PUT_LINE('Varray: Indice = ' || TO_CHAR(i) || ', Valor = ' || TO_CHAR(Numero_Table(i)));
+  END LOOP;
+END; 
+ 
+   
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
 
     
 
