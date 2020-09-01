@@ -1714,10 +1714,84 @@ END;
     
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+39.Utilizando Métodos para controlar Collections 
+
+ * Além da lógica de programação, pode ser utilizado métodos para controlar as collections.
+ 
+ -- SINTAXE:
+ -----------
+ 
+ nome_collection_metodo [(parametros)] -- Obs: O parametro e opcional
 
 
 
+ MÉTODOS DE COLLECTIONS:
+ -----------------------
 
+METODO    	DESCRICAO 											TIPOS DE COLLECTIONS 
+
+exists(n) 	Retorna TRUE se o elemento n existe
+			Todos
+count		Retorna o número de elementos							Todos
+				Todos
+first		Retorna o primeiro número do índice						Todos
+			Retorna NULL se a collection está vazia		
+
+last 		Retorna o último número do índice.						Todos
+			Retorna NULL se a Collection está vázia
+			
+prior(n)	Retorna o número do índice anterior a n.				Todos
+
+next(n)		Retorna o número do índice posterior a n.				Todos
+
+
+limit 		Se aplica apeas p/ VARRAY, somente varray tem limite.	Varray
+			Retorna o maior possível do índice
+
+extend(n)	Para aumentar o tamanho:								Nested Table e Varray
+			EXTEND adiciona um elemento nulo.
+			EXTEND(n) adiciona n elementos nulos
+			EXTEND(n,i) adiciona n cópias do elemento
+
+trim 		TRIM remove um elemento do final da collection.			Nested Table 
+			TRIM(n) remove n elementos do final da collections 
+
+delete		DELETE remove todos os elementos de uma Collection.		Associative Array ou Nested Table
+			DELETE(n) remove o elemento n da Collection.
+			DELETE(m, n) remove todos os elementos na faixa m..n da Collection.
+
+
+
+ Exemplo Prático com métodos first e last:
+ -----------------------------------------
+
+--
+-- Seção 11 - Tipos Compostos - Collections 
+--
+-- Aula 7 - Utilizando Métodos para controlar Collections
+--
+
+-- Utilizando Métodos para controlar Collections
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  TYPE employees_table_type IS TABLE OF employees%rowtype;
+  employees_table  employees_table_type := employees_table_type();
+BEGIN
+  SELECT *
+    BULK COLLECT INTO employees_table 
+  FROM employees;
+  FOR i IN employees_table.first..employees_table.last  -- first e last --> sao metodos p/ controlar collections
+  LOOP
+    DBMS_OUTPUT.PUT_LINE(employees_table(i).employee_id || ' - ' || 
+                         employees_table(i).first_name || ' - ' || 
+                         employees_table(i).last_name || ' - ' ||
+                         employees_table(i).phone_number || ' - ' ||
+                         employees_table(i).job_id || ' - ' ||
+                         TO_CHAR(employees_table(i).salary,'99G999G999D99'));   
+  END LOOP;
+END;
 
 
 
