@@ -1782,7 +1782,7 @@ BEGIN
   SELECT *
     BULK COLLECT INTO employees_table 
   FROM employees;
-  FOR i IN employees_table.first..employees_table.last  -- first e last --> sao metodos p/ controlar collections
+  FOR i IN employees_table.first..employees_table.last  -- first e last --> sao metodos p/ controlar o indice da collections
   LOOP
     DBMS_OUTPUT.PUT_LINE(employees_table(i).employee_id || ' - ' || 
                          employees_table(i).first_name || ' - ' || 
@@ -1793,12 +1793,143 @@ BEGIN
   END LOOP;
 END;
 
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+Seção 12:PL/SQL Fundamentos - Cursor Explícito
+
+40.Controlando um Cursor Explícito utilizando CURSOR FOR LOOP 
+
+ -- CURSOR:
+ ----------
+ 
+ * O Servidor Oracle utiliza áreas de trabalho chamadas private SQL areas para executar
+   comandos SQL e para armazenar informações de processamento. (Fica na SGA)
+
+ * Você pode utilizar cursores para nomear uma dessas áreas e acessar suas informações 
+   armazenadas
+
+ * O Cursor direciona todas as fases de processamento do comando SQL
+ 
+ 
+ -- TIPOS DE CURSORES:
+ ---------------------
+ 
+ IMPLÍCITO:
+		Cursores implícitos são declarados implicitamente para todos os comandos DML e para 
+		comandos SELECT que retornam somente uma linha.
+		Controles implícitos, não temos controles nenhum.
+
+ EXPLÍCITO:
+		Para consultas que retornam mais de uma linha, um cursor explícito pode ser declarado
+		e nomeado pelo programador e manipulado através de comandos específicos no bloco PL/SQL.
+
+		
+ * Utilize cursores explícitos para individualmente processar cada linha retornada por um 
+   comando SELECT multi-row(Várias Linhas)
+   
+ * O Conjunto de linhas retornadas por uma consulta multi-row é denominado result set
+ 
+ * Um programa PL/SQL abre um cursor, processa(fetch) as linhas retornadas pela consulta e 
+   então fecha o cursor 
+   
+ * O cursor marca a posição corrente no result set
 
 
+ -- ATRIBUTOS DE CURSOR EXPLICITO:
+ ---------------------------------
+ 
+METODO			TIPO 		TIPOS DE COLLECTIONS 
+
+%ISOPEN 		Boolean		Retorna TRUE se o cursor estiver aberto
+%NOTFOUND		Boolean		Retorna TRUE se o último FETCH não retornou um linha
+%FOUND 			Boolean		Retorna TRUE se o último FETCH retornou uma linha 
+%ROWCOUNT		Number 		Retorna o número de linhas recuperadas por FETCH até o momento
+
+ -- Exemplo Prático:
+ -------------------
+--
+--
+-- Seção 12 - Cursor Explícito
+--
+-- Aula 1 - Controlando um Cursor Explícito
+--
+
+-- Controlando um Cursor Explícito com LOOP Básico
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  CURSOR  employees_cursor  IS
+  SELECT  *
+  FROM    employees;  -- Declaração do Cursor
+  
+  employees_record  employees_cursor%rowtype; 
+BEGIN
+  /* Inicializa */
+  
+  OPEN  employees_cursor;  -- Abrindo o Cursor
+  
+  /* Loop */
+  
+  LOOP  -- Loop Básico
+    FETCH  employees_cursor  
+    INTO  employees_record; -- Fetch do Cursor
+    
+    EXIT WHEN employees_cursor%notfound;
+    
+    DBMS_OUTPUT.PUT_LINE(employees_record.employee_id || ' - ' ||
+                         employees_record.first_name || ' ' || 
+                         employees_record.last_name || ' - ' ||
+                         employees_record.department_id || ' - ' ||
+                         employees_record.job_id || ' - ' ||
+                         employees_record.phone_number || ' - ' ||
+                         LTRIM(TO_CHAR(employees_record.salary, 'L99G999G999D99')));
+    
+  END LOOP;
+  
+  CLOSE employees_cursor; -- Close do Cursor
+END;
 
 
+-- Controlando um Cursor Explícito com WHILE LOOP
 
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  CURSOR  employees_cursor  IS
+  SELECT  *
+  FROM    employees; -- Declaração do Cursor
+  employees_record  employees_cursor%rowtype; 
+BEGIN
+  /* Inicializa */
+  
+  OPEN  employees_cursor; -- Abrindo o Cursor
+  
+  FETCH  employees_cursor  
+    INTO  employees_record; -- Fetch do Cursor
+	
+  /* Loop */
+  
+  WHILE  employees_cursor%found  LOOP  -- se tiver registro entra no loop
+     DBMS_OUTPUT.PUT_LINE(employees_record.employee_id || ' - ' ||
+                         employees_record.first_name || ' ' || 
+                         employees_record.last_name || ' - ' ||
+                         employees_record.department_id || ' - ' ||
+                         employees_record.job_id || ' - ' ||
+                         employees_record.phone_number || ' - ' ||
+                         LTRIM(TO_CHAR(employees_record.salary, 'L99G999G999D99')));
+    FETCH  employees_cursor  
+      INTO  employees_record;
+  END LOOP;
+  
+  CLOSE employees_cursor; -- Close do Cursor, libera os recursos de memoria
+END;
 
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+Seção 12:PL/SQL - Cursor Explícito - 40.Controlando um Cursor Explícito utilizando CURSOR FOR LOOP
+
+ 
 
 
 
