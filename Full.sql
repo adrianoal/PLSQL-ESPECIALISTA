@@ -1986,9 +1986,6 @@ END;
 ---------------------------------------------------------------------------------------------------			
 42.Cursor Explícito com Parâmetros
 
-
-
-
 --
 --
 -- Seção 12 - Cursor Explícito
@@ -2024,8 +2021,60 @@ BEGIN
   
 END;
 
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+43.Cursor Explícito com SELECT FOR UPDATE
+
+ * Na linguagem SQL quando vc faz um SELECT com a clausula FOR UPDATE, o SELECT vai fazer 
+   Lock nas linhas recuperadas pelo SELECT. Se em uma outra sessão/transação alguém tentar
+   fazer algum comando DML ou outro select for update nas linhas q estão locked, a outra sessão vai ficar 
+   em waiting(aguardando) até que seja feito um commit ou rollback.
+   O mesmo acontece quando se usa o CURSOR FOR UPDATE.
 
 
+
+CURSOR nome_cursor
+IS
+SELECT ....
+FROM   ....
+FOR UPDATE OF nomecoluna[NOWAIT] -- A opção default é NOWAIT
+	-- Ou seja se a linha estiver bloqueada vai ficar esperando.
+	
+/*	
+ Observação: Vc so pode usar a cláusula WHERE CURRENT OF para os cursores com FOR UPDATE.	
+ Tomar cuidado com esse tipo de cursor, porque pode degradar outras aplicações
+*/ 
+	
+--
+--
+-- Seção 12 - Cursor Explícito
+--
+-- Aula 4 - Cursor Explícito com SELECT FOR UPDATE
+--
+
+-- Cursor Explícito com SELECT FOR UPDATE
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  CURSOR  employees_cursor (pjob_id VARCHAR2)
+  IS
+  SELECT  * FROM    employees
+  WHERE   job_id = pjob_id
+  FOR UPDATE;
+  
+BEGIN
+  FOR employees_record IN  employees_cursor ('AD_VP')
+  LOOP
+      UPDATE employees
+      SET salary = salary * (1 + 10 / 100)
+      WHERE CURRENT OF employees_cursor; -- Vai deletar ou atualizar a linha corrente do Cursor
+  END LOOP;
+  COMMIT;
+END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
 
 
 
