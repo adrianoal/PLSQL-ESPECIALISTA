@@ -2128,7 +2128,7 @@ Seção 13:PL/SQL Fundamentos - Tratamento de Exceções
  -- RAISE_APPLICATION_ERRO:
  --------------------------
  
- * O número é o código de erroa a ser mostrado, e deve estar no intervalo [-20000, -20999]
+ * O número é o código de erro a ser mostrado, e deve estar no intervalo [-20000, -20999]
     Esse intervalo é o que o programador pode usar, não existe nenhuma exceção Oracle com
     esse intervalo...
  * A string contém o texto da mensagem de erro com até 2018 bytes de tamanho.
@@ -2224,14 +2224,52 @@ EXCEPTION
        RAISE_APPLICATION_ERROR(-20002, 'Erro Oracle ' || SQLCODE || SQLERRM);
 END;
 
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+46.PRAGMA EXCEPTION INIT
+
+ * Quando um erro não está mapeado pela Oracle pode ser criado um exception do tipo PRAGMA
+   EXCEPTION INIT
+
+--
+--
+-- Seção 13 - Tratamento de Exceções
+--
+-- Aula 3 - PRAGMA EXCEPTION INIT
+--
+
+-- PRAGMA EXCEPTION INIT
+
+DECLARE
+   vemployee_id    employees.employee_id%TYPE := 300;
+   vfirst_name     employees.first_name%TYPE := 'Robert';
+   vlast_name      employees.last_name%TYPE := 'Ford';
+   vjob_id         employees.job_id%TYPE := 'XX_YYYY';
+   vphone_number   employees.phone_number%TYPE := '650.511.9844';
+   vemail          employees.email%TYPE := 'RFORD';
+   efk_inexistente EXCEPTION; -- Associando exception ao ao pragma abaixo q eu criei 
+   PRAGMA EXCEPTION_INIT(efk_inexistente, -2291); -- esse erro e uma violacao de FK
+
+BEGIN
+   INSERT INTO employees (employee_id, first_name, last_name, phone_number, email, hire_date,job_id)
+   VALUES (vemployee_id, vfirst_name, vlast_name, vphone_number, vemail, sysdate, vjob_id);
+EXCEPTION
+   WHEN  efk_inexistente 
+   THEN
+         RAISE_APPLICATION_ERROR(-20003, 'Job inexistente!');
+   WHEN OTHERS 
+   THEN
+         RAISE_APPLICATION_ERROR(-20002, 'Erro Oracle ' || SQLCODE || SQLERRM);
+END;
+
+-- Forçando o Erro para descobrir o código de Erro a ser tratado
+
+   INSERT INTO employees (employee_id, first_name, last_name, phone_number, email, hire_date, job_id)
+   VALUES (employees_seq.nextval, 'Joseph', 'Smith', '3333333', 'JSMITH', sysdate, 'ZZZZ_XX');
 
 
-
-
-
-
-
-
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
 
 
 
