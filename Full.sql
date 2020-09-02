@@ -2075,14 +2075,107 @@ END;
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+Seção 13:PL/SQL Fundamentos - Tratamento de Exceções
 
+44.Tratamento de Exceções 
 
+ * Exceções são eventos(normalmente erros), que podem ser tratados designando ações a serem 
+   tomadas quando uma exceção ocorre.
 
+ * Quando um execução ocorre durante a execução do bloco PL/SQL, e não houver um tratamento
+   para a Exceção, a Exceção se propagará para o ambiente chamador do bloco PL/SQL.
 
+ * Se a exceção não for tratada no programa então propagará um Erro Oracle.
 
+ -- TIPOS DE EXCEÇÕES :
+ ----------------------
+ 
+ * Esceções pré-definidas Oracle, tais como:
+ TOO_MANY_ROWS, NO_DATA_FOUND, e etc.
+ 
+ TOO_MANY_ROWS --> Recupera mais de uma linha 
+ NO_DATA_FOUND --> Recupera nenhuma linha
+ 
+ * Exceções definidas pelo desenvolvedor e disparadas utilizando o comando RAISE 
+ 
+ * Exceções que interceptam erros Oracle não pré-definidos utilizando PRAGMA EXCEPTION_INIT
 
+ * Um erro Oracle ocorre e a Exceção associada ao Erro é disparada automaticamente.
+   Por exemplo, Erro ORA-01403, quando o SELECT no bloco PL/SQL não retorna linhas, a exceção
+   pré-definida Oracle NO_DATA_FOUND é disparada.
+   
+ * Vc dispara uma exceção explicitamente executando o comando RAISE dentro do bloco.
+   A exceção disparada pode ser uma exceção definida pelo desenvolvedor ou uma Exceção 
+   Pré-definida Oracle.
+   
+   
+ -- EXCEÇÃO PROPAGADA:
+ --------------------- 
+ 
+ * Se a Exceção disparada na seção BEGIN(executável) do bloco e não existir um tratamento de 
+   exceção correspondente na seção EXCEPTION do respectivo bloco onde a Exceção ocorreu, a 
+   Exceção será propagada para o ambiente chamador
+   
+ * A Exceção que foi propagada poderá ser tratada na seção EXCEPTION do ambiente chamador
+   (Java, .C#, Python e etc)
 
+ * É uma boa prática não deixar um exceção se propagar... (Exceção tratada, não é erro)
+ 
+ * OTHERS deve ser o último tratamento de exceção definido na seção EXCEPTION 
+ 
+ * Em caso de dúvidas pesquisar exceções pré-definidas pela Oracle
 
+ -- RAISE_APPLICATION_ERRO:
+ --------------------------
+ 
+ * O número é o código de erroa a ser mostrado, e deve estar no intervalo [-20000, -20999]
+    Esse intervalo é o que o programador pode usar, não existe nenhuma exceção Oracle com
+    esse intervalo...
+ * A string contém o texto da mensagem de erro com até 2018 bytes de tamanho.
+ 
+ SQLCODE A Função SQLCODE retorna o código de erro Oracle que disparou a Exceção
+ 
+ SQLERRM A Função SQLERRM retorna a messagem do erro Oracle que disparou a Exceção 
+ 
+ * Com essas duas funções, podemos identificar uma exceção e capturar sua mensagem.
+ 
+ 
+ 
+--
+--
+-- Seção 13 - Tratamento de Exceções
+--
+-- Aula 1 - Tratamento de Exceções
+--
+
+-- Tratamento de Exceções Pré-definidas Oracle
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF  -- Para não exeibir os comandos do bloco, após a execução do bloco
+ACCEPT  pEmployee_id PROMPT 'Digite o Id do Empregado: '
+DECLARE
+  vFirst_name   employees.first_name%TYPE;
+  vLast_name    employees.last_name%TYPE;
+  vEmployee_id  employees.employee_id%TYPE := &pEmployee_id;
+BEGIN
+  SELECT first_name, last_name
+  INTO   vfirst_name, vlast_name
+  FROM   employees
+  WHERE  employee_id = vEmployee_id;
+
+  DBMS_OUTPUT.PUT_LINE('Empregado: ' || vfirst_name || ' ' || vlast_name);
+ 
+EXCEPTION
+  WHEN NO_DATA_FOUND 
+  THEN
+     RAISE_APPLICATION_ERROR(-20001, 'Empregado não encontrado, id = '||TO_CHAR(vEmployee_id));
+  WHEN OTHERS 
+  THEN
+     RAISE_APPLICATION_ERROR(-20002, 'Erro Oracle - ' || SQLCODE || SQLERRM);
+
+END;
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
 
 
 
