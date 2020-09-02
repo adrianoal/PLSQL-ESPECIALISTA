@@ -2248,7 +2248,7 @@ DECLARE
    vphone_number   employees.phone_number%TYPE := '650.511.9844';
    vemail          employees.email%TYPE := 'RFORD';
    efk_inexistente EXCEPTION; -- Associando exception ao ao pragma abaixo q eu criei 
-   PRAGMA EXCEPTION_INIT(efk_inexistente, -2291); -- esse erro e uma violacao de FK
+   PRAGMA EXCEPTION_INIT(efk_inexistente, -2291); -- esse erro e uma violacao de FK da Oracle, estou tratando com a exceptio q criei
 
 BEGIN
    INSERT INTO employees (employee_id, first_name, last_name, phone_number, email, hire_date,job_id)
@@ -2270,19 +2270,298 @@ END;
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+Seção 14:PL/SQL Fundamentos - Procedures de Banco de Dados 
+
+47.Criando Procedure de banco de dados 
+
+
+
+--
+--
+-- Seção 14 - Procedures de Banco de Dados
+--
+-- Aula 1 - Criando Procedures de Banco de Dados
+--
+
+-- Criando uma Procedure de Banco de Dados
+
+CREATE OR REPLACE PROCEDURE PRC_INSERE_EMPREGADO
+  (pfirst_name    IN VARCHAR2,
+   plast_name     IN VARCHAR2,
+   pemail         IN VARCHAR2,
+   pphone_number  IN VARCHAR2,
+   phire_date     IN DATE DEFAULT SYSDATE,
+   pjob_id        IN VARCHAR2,
+   pSALARY        IN NUMBER,
+   pCOMMICION_PCT IN NUMBER,
+   pMANAGER_ID    IN NUMBER,
+   pDEPARTMENT_ID IN NUMBER)
+IS 
+  -- Nenhuma váriável declarada
+BEGIN
+  INSERT INTO employees (
+    employee_id,
+    first_name,
+    last_name,
+    email,
+    phone_number,
+    hire_date,
+    job_id,
+    salary,
+    commission_pct,
+    manager_id,
+    department_id )
+  VALUES (
+    employees_seq.nextval,
+    pfirst_name,
+    plast_name,
+    pemail,
+    pphone_number,
+    phire_date,
+    pjob_id,
+    psalary,
+    pcommicion_pct,
+    pmanager_id,
+    pdepartment_id );
+EXCEPTION
+  WHEN OTHERS THEN
+     RAISE_APPLICATION_ERROR(-20001, 'Erro Oracle ' || SQLCODE || SQLERRM);
+END;
+
+-- Executando a Procedure pelo Bloco PL/SQL
+
+BEGIN
+  PRC_INSERE_EMPREGADO('David', 'Bowie','DBOWIE','515.127.4861',SYSDATE,'IT_PROG',15000,NULL,103,60);
+  COMMIT;
+END;
+
+-- Consultando o empregado inserido
+SELECT *
+FROM   employees
+WHERE  first_name = 'David' AND
+       last_name = 'Bowie';
+
+-- Executando a Procedure com o comando EXECUTE do SQL*PLUS
+
+EXEC PRC_INSERE_EMPREGADO('Greg', 'Lake','GLAKE','515.127.4961',SYSDATE,'IT_PROG',15000,NULL,103,60)
+
+COMMIT;
+
+-- Consultando o empregado inserido
+SELECT *
+FROM   employees
+WHERE  first_name = 'Greg' AND
+       last_name = 'Lake';
+
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+48.Utilizando Parametros tipo IN 
+
+--
+--
+-- Seção 14 - Procedures de Banco de Dados
+--
+-- Aula 2 - Utilizando Parametros tipo IN
+--
+
+-- Utilizando Parametros tipo IN
+
+CREATE OR REPLACE PROCEDURE PRC_AUMENTA_SALARIO_EMPREGADO
+  (pemployee_id   IN NUMBER,
+   ppercentual    IN NUMBER)
+IS
+  -- Nenhuma váriável declarada
+BEGIN
+  UPDATE employees 
+  SET salary = salary * (1 + ppercentual / 100)
+  WHERE employee_id = pemployee_id;
+
+EXCEPTION
+  WHEN OTHERS 
+  THEN
+     RAISE_APPLICATION_ERROR(-20001, 'Erro Oracle: ' || SQLCODE || ' - ' || SQLERRM);
+END;
+
+- Executando a Procedure pelo Bloco PL/SQL
+
+BEGIN
+  PRC_AUMENTA_SALARIO_EMPREGADO(109,10);
+  COMMIT;
+END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+49.Utilizando Parametros tipo OUT e IN OUT 
+
+ * Os parâmetros do tipo IN funcionam internamente por referência 
+   Ou seja os parametros do tipo IN referenciam a mesma area de memoria utilizada pelo programa
+   chamador.
+
+ * Os parâmetros do tipo OUT e IN OUT por default funcionam por cópia 
+   Portantos, as procedures que utilizam parametros OUT e IN OUT vai copiar o valor do parametro
+   para uma area de memoria da procedure , e dessa forma vai consumir um pouco a mais de memoria.
+   
+    
+ -- OPÇÃO NOCOPY:
+ ----------------
+ 
+ * É possível utilizarmos parâmetros OUT e IN OUT por referência, de modo que a área de memória 
+   usada pela variável do ambiente chamador e pelo parâmetro do subprograma sejam a mesma.
+  
+ Em resumo parametros OUT e IN OUT podem funcionar em vez de copia por referencia atravez 
+ do NOCOPY   
+   
+
+
+--
+--
+-- Seção 14 - Procedures de Banco de Dados
+--
+-- Aula 3 - Utilizando Parametros tipo OUT e IN OUT
+--
+
+-- Utilizando Parametros tipo OUT 
+
+CREATE OR REPLACE PROCEDURE PRC_CONSULTA_EMPREGADO
+  (pemployee_id   IN NUMBER,
+   pfirst_name    OUT VARCHAR2,
+   plast_name     OUT VARCHAR2,
+   pemail         OUT VARCHAR2,
+   pphone_number  OUT VARCHAR2,
+   phire_date     OUT DATE,
+   pjob_id        OUT VARCHAR2,
+   pSALARY        OUT NUMBER,
+   pCOMMISSION_PCT OUT NUMBER,
+   pMANAGER_ID    OUT NUMBER,
+   pDEPARTMENT_ID OUT NUMBER)
+IS 
+  -- Nenhuma variável declarada
+BEGIN
+  SELECT
+    first_name,
+    last_name,
+    email,
+    phone_number,
+    hire_date,
+    job_id,
+    salary,
+    commission_pct,
+    manager_id,
+    department_id
+  INTO 
+    pfirst_name,
+    plast_name,
+    pemail,
+    pphone_number,
+    phire_date,
+    pjob_id,
+    psalary,
+    pcommission_pct,
+    pmanager_id,
+    pdepartment_id
+  FROM employees
+  WHERE employee_id = pemployee_id;
+  
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+     RAISE_APPLICATION_ERROR(-20001, 'Empregado Não existe: ' || pemployee_id);
+  WHEN OTHERS THEN
+     RAISE_APPLICATION_ERROR(-20002, 'Erro Oracle ' || SQLCODE || SQLERRM);
+END;
+
+-- Executando procedure parametro Tipo OUT
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE 
+  employees_record  employees%ROWTYPE;
+BEGIN
+  PRC_CONSULTA_EMPREGADO(100, employees_record.first_name, employees_record.last_name, employees_record.email,
+    employees_record.phone_number, employees_record.hire_date, employees_record.job_id, employees_record.salary, 
+    employees_record.commission_pct, employees_record.manager_id, employees_record.department_id);
+    DBMS_OUTPUT.PUT_LINE(employees_record.first_name || ' ' || 
+                         employees_record.last_name || ' - ' ||
+                         employees_record.department_id || ' - ' ||
+                         employees_record.job_id || ' - ' ||
+                         employees_record.phone_number || ' - ' ||
+                         LTRIM(TO_CHAR(employees_record.salary, 'L99G999G999D99')));
+END;
 
 
 
 
 
 
+-- Utilizando Parametros tipo OUT com opção NOCOPY
+
+CREATE OR REPLACE PROCEDURE PRC_CONSULTA_EMPREGADO
+  (pemployee_id   IN NUMBER,
+   pfirst_name    OUT NOCOPY VARCHAR2,
+   plast_name     OUT NOCOPY VARCHAR2,
+   pemail         OUT NOCOPY VARCHAR2,
+   pphone_number  OUT NOCOPY VARCHAR2,
+   phire_date     OUT NOCOPY DATE,
+   pjob_id        OUT NOCOPY VARCHAR2,
+   pSALARY        OUT NOCOPY NUMBER,
+   pCOMMISSION_PCT OUT NOCOPY NUMBER,
+   pMANAGER_ID    OUT NOCOPY NUMBER,
+   pDEPARTMENT_ID OUT NOCOPY NUMBER)
+IS 
+BEGIN
+  SELECT
+    first_name,
+    last_name,
+    email,
+    phone_number,
+    hire_date,
+    job_id,
+    salary,
+    commission_pct,
+    manager_id,
+    department_id
+  INTO 
+    pfirst_name,
+    plast_name,
+    pemail,
+    pphone_number,
+    phire_date,
+    pjob_id,
+    psalary,
+    pcommission_pct,
+    pmanager_id,
+    pdepartment_id
+  FROM employees
+  WHERE employee_id = pemployee_id;
+  
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+     RAISE_APPLICATION_ERROR(-20001, 'Empregado Não existe: ' || pemployee_id);
+  WHEN OTHERS THEN
+     RAISE_APPLICATION_ERROR(-20002, 'Erro Oracle ' || SQLCODE || SQLERRM);
+END;
+
+-- Executando procedure parametro Tipo OUT
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE 
+  employees_record  employees%ROWTYPE;
+BEGIN
+  PRC_CONSULTA_EMPREGADO(100, employees_record.first_name, employees_record.last_name, employees_record.email,
+    employees_record.phone_number, employees_record.hire_date, employees_record.job_id, employees_record.salary, 
+    employees_record.commission_pct, employees_record.manager_id, employees_record.department_id);
+    DBMS_OUTPUT.PUT_LINE(employees_record.first_name || ' ' || 
+                         employees_record.last_name || ' - ' ||
+                         employees_record.department_id || ' - ' ||
+                         employees_record.job_id || ' - ' ||
+                         employees_record.phone_number || ' - ' ||
+                         LTRIM(TO_CHAR(employees_record.salary, 'L99G999G999D99')));
+END;
 
 
-
-
-
-
-
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
 
 
 
