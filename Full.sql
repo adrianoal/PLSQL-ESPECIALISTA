@@ -2565,12 +2565,8 @@ END;
 50.Métodos de passagem de parâmetros 
 
  * Métodos Posicional
- * Método Nomeado 
+ * Método Nomeado (aqui pode ser passado em qualquer ordem)
  
- 
-
-
-
 
 --
 --
@@ -2617,19 +2613,18 @@ DECLARE
   VDEPARTMENT_ID NUMBER;
 BEGIN
 
-  PRC_CONSULTA_EMPREGADO(
-    PEMPLOYEE_ID => VEMPLOYEE_ID,
-    PFIRST_NAME => VFIRST_NAME,
-    PLAST_NAME => VLAST_NAME,
-    PEMAIL => VEMAIL,
-    PPHONE_NUMBER => VPHONE_NUMBER,
-    PHIRE_DATE => VHIRE_DATE,
-    PJOB_ID => VJOB_ID,
-    PSALARY => VSALARY,
-    PCOMMISSION_PCT => VCOMMISSION_PCT,
-    PMANAGER_ID => VMANAGER_ID,
-    PDEPARTMENT_ID => VDEPARTMENT_ID
-  );
+  PRC_CONSULTA_EMPREGADO(PEMPLOYEE_ID => VEMPLOYEE_ID,
+						 PFIRST_NAME => VFIRST_NAME,
+						 PLAST_NAME => VLAST_NAME,
+						 PEMAIL => VEMAIL,
+						 PPHONE_NUMBER => VPHONE_NUMBER,
+						 PHIRE_DATE => VHIRE_DATE,
+						 PJOB_ID => VJOB_ID,
+						 PSALARY => VSALARY,
+						 PCOMMISSION_PCT => VCOMMISSION_PCT,
+						 PMANAGER_ID => VMANAGER_ID,
+						 PDEPARTMENT_ID => VDEPARTMENT_ID
+						);
 
   DBMS_OUTPUT.PUT_LINE('PFIRST_NAME = ' || VFIRST_NAME);
   DBMS_OUTPUT.PUT_LINE('PLAST_NAME = ' || VLAST_NAME);
@@ -2642,6 +2637,30 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('PMANAGER_ID = ' || VMANAGER_ID);
   DBMS_OUTPUT.PUT_LINE('PDEPARTMENT_ID = ' || VDEPARTMENT_ID);
 END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+51.Recompilando Procedures de Banco de Dados 
+
+ALTER PROCEDURE nome_procedure COMPILE;
+
+ Exemplo Prático Abaixo
+
+--
+--
+-- Seção 14 - Procedures de Banco de Dados
+--
+-- Aula 5 - Recompilando Procedures de Banco de Dados
+--
+
+-- Recompilando Procedures de Banco de Dados
+
+ALTER PROCEDURE PRC_INSERE_EMPREGADO COMPILE;
+
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+
 
 
 
