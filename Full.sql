@@ -1927,8 +1927,63 @@ END;
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
-Seção 12:PL/SQL - Cursor Explícito - 40.Controlando um Cursor Explícito utilizando CURSOR FOR LOOP
+41.Controlando um Cursor Explícito utilizando CURSOR FOR LOOP 
 
+
+ * Cursor com FOR LOOP facilita muito controlar um cursor
+ 
+
+
+--
+--
+-- Seção 12 - Cursor Explícito
+--
+-- Aula 2 - Controlando um Cursor Explícito utilizando CURSOR FOR LOOP
+--
+
+-- Controlando um Cursor Explícito utilizando CURSOR FOR LOOP
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  CURSOR  employees_cursor  IS
+  SELECT  *
+  FROM    employees;
+BEGIN
+  FOR employees_record IN  employees_cursor
+  LOOP 						--> No FOR LOOP o Open e Fetch estao implicitos e o loop controla o notfoud e close
+    DBMS_OUTPUT.PUT_LINE(employees_record.employee_id || ' - ' ||
+                         employees_record.first_name || ' ' || 
+                         employees_record.last_name || ' - ' ||
+                         employees_record.department_id || ' - ' ||
+                         employees_record.job_id || ' - ' ||
+                         employees_record.phone_number || ' - ' ||
+                         LTRIM(TO_CHAR(employees_record.salary, 'L99G999G999D99')));
+
+  END LOOP;
+END;
+
+-- Cursor implícito
+-- CURSOR FOR LOOP utilizando Sub-consulta
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+BEGIN
+  FOR employees_record IN  (SELECT  * FROM    employees)
+  LOOP
+    DBMS_OUTPUT.PUT_LINE(employees_record.employee_id || ' - ' ||
+                         employees_record.first_name || ' ' || 
+                         employees_record.last_name || ' - ' ||
+                         employees_record.department_id || ' - ' ||
+                         employees_record.job_id || ' - ' ||
+                         employees_record.phone_number || ' - ' ||
+                         LTRIM(TO_CHAR(employees_record.salary, 'L99G999G999D99')));
+
+  END LOOP;
+END;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
  
 
 
