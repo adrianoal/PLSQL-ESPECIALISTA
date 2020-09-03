@@ -2899,9 +2899,173 @@ DROP FUNCTION nome_funcao;
 
 DROP FUNCTION FNC_CONSULTA_SALARIO_EMPREGADO;
 
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+Seção 16:PL/SQL Fundamentos - Gerenciando Procedures e Functions 
+
+57.Gerenciando Procedure e Functions 
+
+
+ * Após criar procedures e functions no banco de dados, obtenha informações sobre o código 
+   fonte e os erros de compilação a partir de visões do Dicionário de dados e comandos 
+   interativos.
+   
+ -- CONSULTANDO OBJETOS TIPO PROCEDURE E FUNCTION:
+ -------------------------------------------------
+
+ * Consulte informações sobre todas as procedures e funções armazenadas no banco de dados
+   consultando as visões:
+   
+   USER_OBJECTS --> Contem informações(objetos) do usuário q esta conectado
+   ALL_OBJECTS  --> Contem informações(objetos) do usuário q esta conectado mais os objetos q ele tem privilégio 
+   DBA_OBJECTS  --> Acesso a todos os objetos do banco de dados, porém, somente o DBA tem acesso
+   
+   do Dicionário de Dados 
+   
+ -- CONSULTANDO NA PRATICA:
+ -------------------------- 
+ 
+
+--
+-- Seção 16 - Gerenciando Procedures e Functions
+--
+-- Aula 1 - Gerenciando Procedures e Functions
+--
+
+-- Gerenciando Procedures e Functions
+
+-- Consultando objetos tipo Procedure e Function do seu Usuário
+
+DESC USER_OBJECTS
+
+Nome              Nulo? Tipo          
+----------------- ----- ------------- 
+OBJECT_NAME             VARCHAR2(128) -- nome do objeto
+SUBOBJECT_NAME          VARCHAR2(128) -- tipo do objeto
+OBJECT_ID               NUMBER        
+DATA_OBJECT_ID          NUMBER        
+OBJECT_TYPE             VARCHAR2(23)  
+CREATED                 DATE		  -- data da criacao do objeto          
+LAST_DDL_TIME           DATE          -- data da ultima alteracao da estrutura do objeto
+TIMESTAMP               VARCHAR2(19)  -- data da ultima compilacao
+STATUS                  VARCHAR2(7)   -- vai mostra valid(se for proc ou func)se estiver compilado ok e invalid se tiver erros
+TEMPORARY               VARCHAR2(1)   
+GENERATED               VARCHAR2(1)   
+SECONDARY               VARCHAR2(1)   
+NAMESPACE               NUMBER        
+EDITION_NAME            VARCHAR2(128) 
+SHARING                 VARCHAR2(18)  
+EDITIONABLE             VARCHAR2(1)   
+ORACLE_MAINTAINED       VARCHAR2(1)   
+APPLICATION             VARCHAR2(1)   
+DEFAULT_COLLATION       VARCHAR2(100) 
+DUPLICATED              VARCHAR2(1)   
+SHARDED                 VARCHAR2(1)   
+CREATED_APPID           NUMBER        
+CREATED_VSNID           NUMBER        
+MODIFIED_APPID          NUMBER        
+MODIFIED_VSNID          NUMBER 
 
 
 
+
+SELECT object_name, object_type, last_ddl_time, timestamp, status
+FROM   user_objects
+WHERE  object_type IN ('PROCEDURE', 'FUNCTION');
+
+SELECT object_name, object_type, last_ddl_time, timestamp, status
+FROM   all_objects
+WHERE  object_type IN ('PROCEDURE', 'FUNCTION');
+
+-- Consultando objetos Inválidos do schema do seu usuário 
+
+DESC USER_OBJECTS (necessario se conectar como sys)
+
+SELECT object_name, object_type, last_ddl_time, timestamp, status
+FROM   user_objects
+WHERE  status = 'INVALID';
+
+------------------------------------------------------------------------------------------------
+		-- Consultando o Código Fonte de Procedures e Funções  do seu usuário --
+------------------------------------------------------------------------------------------------
+
+ * Consulte o código fonte de uma Procedure ou Function armazenada no banco de dados 
+   consultando as visões:
+   
+ USER_SOURCE -- Contém o fonte dos objetos do usuario q esta conectado 
+ ALL_SOURCE  -- Contém o fonte dos objetos do usuario q esta conectado mais os objetos q ele tem privilégio 
+ DBA_SOURCE  -- Contém o fonte dos objetos do banco de dados, porém, so o DBA tem acesso
+
+
+DESC user_source
+
+SELECT line, text
+FROM   user_source
+WHERE  name = 'PRC_INSERE_EMPREGADO' AND
+       type = 'PROCEDURE'
+ORDER BY line;
+
+SELECT line, text
+FROM   user_source
+WHERE  name = 'FNC_CONSULTA_SALARIO_EMPREGADO' AND
+       type = 'FUNCTION'
+ORDER BY line;
+
+-- Consultando a lista de parâmetros de Procedures e Funções 
+
+DESC PRC_INSERE_EMPREGADO
+
+DESC FNC_CONSULTA_SALARIO_EMPREGADO
+
+-- Consultando Erros de Compilação
+
+-- Forçando um erro de compilação
+
+CREATE OR REPLACE FUNCTION FNC_CONSULTA_SALARIO_EMPREGADO
+  (pemployee_id   IN NUMBER)
+   RETURN NUMBER
+IS 
+  vsalary  employees.salary%TYPE;
+BEGIN
+  SELECT salary
+  INTO   vsalary
+  FROM   employees
+  WHERE employee_id = pemployee_id
+  RETURN (vsalary);
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN 
+      RAISE_APPLICATION_ERROR(-20001, 'Empregado inexistente');
+  WHEN OTHERS THEN
+     RAISE_APPLICATION_ERROR(-20002, 'Erro Oracle ' || SQLCODE || SQLERRM);
+END;
+
+-- Consultando Erros de Compilação - Comando SHOW ERRORS
+
+SHOW ERRORS PROCEDURE FNC_CONSULTA_SALARIO_EMPREGADO
+
+------------------------------------------------------------------------------------------------
+			-- Consultando Erros de Compilação - Visão USER_ERRORS --
+------------------------------------------------------------------------------------------------
+
+ * Consultando erros de compilacao de uma procedure ou functions armazenada no banco de dados
+   consultando as visoes:
+   
+ USER_ERROS
+ ALL_ERRORS
+ DBA_ERRORS 
+
+
+DESC user_errors
+
+COLUMN position FORMAT a4
+COLUMN text FORMAT a60
+SELECT line||'/'||position position, text
+FROM   user_errors
+WHERE  name = 'FNC_CONSULTA_SALARIO_EMPREGADO'
+ORDER BY line;
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
 
 
 
