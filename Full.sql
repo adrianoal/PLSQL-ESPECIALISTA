@@ -2788,15 +2788,79 @@ DECLARE
   vEmployee_id  employees.employee_id%TYPE := &pemployee_id;
   vSalary       employees.salary%TYPE;
 BEGIN
-  vsalary := FNC_CONSULTA_SALARIO_EMPREGADO(vEmployee_id);
+  vsalary := FNC_CONSULTA_SALARIO_EMPREGADO(vEmployee_id); -- Atribuindo o retorno da funcao p/ variavel --> vsalary
   DBMS_OUTPUT.PUT_LINE('Salario: ' || vsalary);
 END;
 
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
+54.Utilizando Funções em comandos SQL 
 
+ -- REGRAS PARA O USO DE FUNÇÕES EM COMANDOS SQL:
+ ------------------------------------------------
+ 
+ * As funções devem ser armazenadas no servidor de banco de dados
+ 
+ * A função deve ser do tipo Single-ROW
+ 
+ * A função, não podem haver comandos DML 
+ 
+ * A função deve conter apenas parâmetros do tipo IN 
+ 
+ * Tipos PL/SQL, tais como BOOLEAN, RECORD ou TABLE não são aceitos como o tipo de retorno da
+   função
 
+ * NO corpo da função, não são permitidas chamadas à subrotinas que desobedeçam quaisquer das
+   restrições anteriores
+   
+  
+--
+-- Seção 15 - Funções de Banco de Dados
+--
+-- Aula 2 - Utilizando Funções em comandos SQL
+--
 
+-- Utilizando Funções em comandos SQL
 
+CREATE OR REPLACE FUNCTION FNC_CONSULTA_TITULO_CARGO_EMPREGADO
+  (pjob_id   IN jobs.job_id%TYPE)
+   RETURN VARCHAR2
+IS 
+  vJob_title jobs.job_title%TYPE;
+BEGIN
+  SELECT job_title
+  INTO   vJob_title
+  FROM   jobs
+  WHERE  job_id = pjob_id;
+  RETURN (vJob_title);
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN 
+    RAISE_APPLICATION_ERROR(-20001, 'Job inexistente');
+  WHEN OTHERS THEN
+    RAISE_APPLICATION_ERROR(-20002, 'Erro Oracle ' || SQLCODE || ' - ' || SQLERRM);
+END;
 
+-- Utilizando Funções em comandos SQL
+
+SELECT employee_id, 
+	   first_name, 
+	   last_name, 
+	   job_id, 
+	   FNC_CONSULTA_TITULO_CARGO_EMPREGADO(job_id) "JOB TITLE"
+FROM   employees;
+
+-- Executando a Função pelo comando SELECT
+
+SELECT FNC_CONSULTA_TITULO_CARGO_EMPREGADO('IT_PROG')
+FROM   dual;
+
+-- Executando a Função pelo comando SELECT
+
+SELECT FNC_CONSULTA_SALARIO_EMPREGADO(130)
+FROM   dual;
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------			
 
 
 
