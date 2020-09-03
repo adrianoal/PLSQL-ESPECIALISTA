@@ -3187,12 +3187,76 @@ WHERE  status = 'INVALID';
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------
+59.Utilizando as Visões DEPTREE e IDEPTREE 
 
-
-
-   
-  
+ -- EXECUTANDO O SCRIPT UTLDTREE:
+ --------------------------------
  
+ * Crie as visões DEPTREE e IDEPTREE executando o script utldtree.sql fornecido juntamente 
+   com o banco de dados Oracle.
+   
+ * O Script utldtree.sql pode ser encontrado no diretório: ORACLE_HOME/rdbms/admin
+
+ * Execute o Script utldtree.sql conectado com o usuário owner do objeto para o qual você
+   deseja analisar as dependências.
+   
+   
+
+
+--
+-- Seção 17 - Gerenciando Dependências de Objetos
+--
+-- Aula 2 - Utilizando as Visões DEPTREE e IDEPTREE
+--
+
+-- Executando o script UTLDTREE
+
+--@C:\app\Emilio\product\18.0.0\dbhomeXE\rdbms\admin\utldtree.sql  
+@C:\app\aalima5\product\18.0.0\dbhomeXE\rdbms\admin\utldtree.sql -- F9 ou F5 para executar esse script no Sql Developer
+
+
+-- Obs.: Substitua o caminho de pastas pelo sua instalação
+
+-- Executando a procedure DEPTREE_FILL
+
+exec DEPTREE_FILL('TABLE','HR','EMPLOYEES')
+
+-- Utilizando as Visões DEPTREE
+
+DESC deptree
+
+Nome         Nulo? Tipo           
+------------ ----- -------------- 
+NESTED_LEVEL       NUMBER         -- Nivel de dependencia      
+TYPE               VARCHAR2(23)   -- Tipo do obj dependente
+SCHEMA             VARCHAR2(128)  -- Nome do schema do obj dependente
+NAME               VARCHAR2(1002) -- nome do obj dependente
+SEQ#               NUMBER         -- Uma coluna utilizada no sql p/ sair os dados de forma ordenada
+
+
+SELECT   *
+FROM     deptree
+ORDER by seq#
+
+-- No nivel 0 esta o obj q estamos analisando
+-- Tudo q for nivel 1 tem dependencia direta com o nivel 0
+-- Dependencia indireta apareceria no nivel 2 
+
+
+-- Outra forma de analisar o resultado das dependencias e consultando a view abaixo: IDEPTREE
+-- Utilizando as Visões IDEPTREE
+
+
+
+-- Esta View exibe no formato de tabulação e identação:
+desc ideptree
+SELECT *
+FROM ideptree;
+-- Tudo q esta a direita tem relacao direta com o Obj da ultima linha a esquerda
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+
  
  
 
