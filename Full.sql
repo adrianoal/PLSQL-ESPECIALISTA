@@ -3066,9 +3066,135 @@ ORDER BY line;
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------
+Seção 17:PL/SQL Fundamentos - Gerenciando Dependências de Objetos
+
+58.Gerenciando Dependência de Objetos 
+
+
+ * Sempre que um objeto do banco de dados for alterado, todos os objetos do mesmo banco de 
+ dados que dependem diretamente ou indiretamente dele são invalidados(status INVALID) 
+ automaicamente em cascata.
+ 
+ * Quando um programa fizer uma chamada a uma Procedure ou Function com status (INVALID) 
+   o Oracle automaticamente tentará recompilar o objeto.
+   
+ * Não é uma boa pratica deixar para o gerenciamento do Oracle resolver o problema 
+   automaticamente, é sempre bom o desenvolvedor verificar.
+   
+ -- TIPOS DE DEPENDENCIAS:
+ -------------------------
+
+ * Dependência Direta -- Quando um objeto dependende diretamente de outro objeto 
+ * Dependência Indireta -- Quando um objeto depende de um objeto q depende de um objeto e etc
+ 
+ 
+  -- Dependência local:
+  ---------------------
+  
+  * É uma dependência entre objetos que estão no mesmo Banco de dados 
+  
+  -- Dependência Remota:
+  ----------------------
+  
+  * É uma dependência entre objetos que estão em banco de dados diferentes 
+  
+  -- TRATAMENTO DE DEPENDÊNCIAS LOCAIS DIRETAS:
+  ---------------------------------------------
+  
+ * Faça os devidos ajustes e re-compile todos os objetos que possuem dependência direta ou 
+   objetos que possuem dependência indireta do objeto.
+   
+ -- CONSULTANDO DEPENDENCIAS UTILIZANDO A VISÃO USER_DEPENDENCIES:
+ -----------------------------------------------------------------
+ 
+ * Consulte as Dependências Diretas e Indiretas utilizando as visões:
+   
+ USER_DEPENDENCIES
+ ALL_DEPENDENCIES
+ DBA_DEPENDENCIES
+
+
+Nome                 Nulo?    Tipo          
+-------------------- -------- ------------- 
+NAME                 NOT NULL VARCHAR2(128) -- Nome do objeto q depende do obj q estou consultando
+TYPE                          VARCHAR2(19)  -- Tipo do objeto q depende do obj q estou consultando
+REFERENCED_OWNER              VARCHAR2(128) -- Dono do obj q estou analisando as dependencias
+REFERENCED_NAME               VARCHAR2(128) -- Nome do obj q estou analisando as dependencias
+REFERENCED_TYPE               VARCHAR2(19)  -- Tipo do obj q estou analisando as dependencias
+REFERENCED_LINK_NAME          VARCHAR2(128) 
+SCHEMAID                      NUMBER        
+DEPENDENCY_TYPE               VARCHAR2(4)    
+ 
+   --
+-- Seção 17 - Gerenciando Dependências de Objetos
+--
+-- Aula 1 - Gerenciando Dependências de Objetos
+--
+
+-- Gerenciando Dependências de Objetos
+
+-- Consultando Dependencias Diretas dos objetos do seu schema utilizando a visão USER_DEPENDENCIES 
+
+DESC user_dependencies
+
+SELECT *
+FROM   user_dependencies
+WHERE  referenced_name = 'EMPLOYEES' AND
+       referenced_type = 'TABLE';
+	   
+	   
+ O que deve ser feito, após analisar a dependencias do objeto consultado acima?
+ Abrir o código fonte de cada objeto afetado, ajustar o código fonte, e testar.
+	   
+       
+-- Consultando Dependencias Diretas e Indiretas dos objetos do seu schema utilizando a visão USER_DEPENDENCIES 
+-- Consultando as dependencias de forma hierarquica...
+
+SELECT      *
+FROM        user_dependencies
+START WITH  referenced_name = 'EMPLOYEES' -- START WITH --> Estou definindo que o obj EMPLOYEES esta no topo da hierarquia
+AND referenced_type    = 'TABLE'
+CONNECT BY PRIOR  name = referenced_name -- CONNECT BY PRIOR --> Faz um SQL Hierarquico
+AND type 			   = referenced_type;
+                  
+
+-- Consultando Dependencias Diretas e Indiretas dos objetos de todos schemas utilizando a visão DBA_DEPENDENCIES        
+
+-- Conecte-se como SYS
+
+DESC DBA_DEPENDENCIES
+
+SELECT      *
+FROM        dba_dependencies
+START WITH  referenced_owner = 'HR' AND
+            referenced_name = 'EMPLOYEES' AND
+            referenced_type = 'TABLE'
+CONNECT BY PRIOR  owner = referenced_owner AND
+                  name =  referenced_name   AND
+                  type =  referenced_type;
+                  
+-- Consultando objetos Inválidos do schema do seu usuário 
+
+DESC USER_OBJECTS
+
+SELECT object_name, 
+	   object_type, 
+	   last_ddl_time, 
+	   timestamp, 
+	   status
+FROM   user_objects
+WHERE  status = 'INVALID';
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
 
 
 
+   
+  
+ 
+ 
+ 
 
 
 
