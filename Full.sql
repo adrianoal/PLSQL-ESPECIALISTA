@@ -2732,6 +2732,84 @@ END;
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------			
+Seção 15:PL/SQL Fundamentos - Funções de Banco de Dados
+
+53.Criando Funções de Banco de Dados 
+
+ * Uma função é uma sub-rotina que retorna sempre um valor
+ 
+ * Utilize uma função ao invés de uma procedure quando a rotina retornar obrigatóriamente 
+   um valor 
+   
+ * Se a rotina retornar nenhum ou mais de um valor, considere o uso de uma procedure 
+
+ * O retorno de uma FUNCTION é definido pela cláusula RETURN
+
+ * Funções tbm podem ter parâmetros OUT e IN OUT embora isto não seja muito utilizado em funções
+
+ 
+ -- EXEMPLO PRÁTICO:
+ -------------------
+
+--
+-- Seção 15 - Funções de Banco de Dados
+--
+-- Aula 1 - Criando Funções de Banco de Dados
+--
+
+-- Criando Funções de Banco de Dados
+
+CREATE OR REPLACE FUNCTION FNC_CONSULTA_SALARIO_EMPREGADO
+  (pemployee_id   IN NUMBER)
+   RETURN NUMBER
+IS 
+  vSalary  employees.salary%TYPE;
+BEGIN
+  SELECT salary
+  INTO   vsalary
+  FROM   employees
+  WHERE employee_id = pemployee_id;
+  RETURN (vsalary);
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN 
+    RAISE_APPLICATION_ERROR(-20001, 'Empregado inexistente');
+  WHEN OTHERS THEN
+    RAISE_APPLICATION_ERROR(-20002, 'Erro Oracle ' || SQLCODE || ' - ' || SQLERRM);
+END;
+
+-- Executando a Função pelo Bloco PL/SQL
+-- Obs: Como a função tem um retorno, esse retorno t que ser atribuido p/ uma variável
+
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+ACCEPT pemployee_id PROMPT 'Digite o Id do empregado: '
+DECLARE
+  vEmployee_id  employees.employee_id%TYPE := &pemployee_id;
+  vSalary       employees.salary%TYPE;
+BEGIN
+  vsalary := FNC_CONSULTA_SALARIO_EMPREGADO(vEmployee_id);
+  DBMS_OUTPUT.PUT_LINE('Salario: ' || vsalary);
+END;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
