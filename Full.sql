@@ -3395,10 +3395,59 @@ Seção 19:PL/SQL Fundamentos - Package de Banco de Dados
  
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------
-Seção 19:PL/SQL 61.Criando Packages de Banco de Dados - Conceito
- 
+62.Criando o Package Specification 
 
-  
+ -- VARIÁVEL GLOBAL:
+ -------------------
+ 
+ * Quando vc declara uma variável no Package Specification vc esta declarando uma variável 
+ Global.
+ 
+ * Uma variável Global terá valor durante toda a Sessão do Oracle, as variáveis normais 
+   declaradas em uma função ou procedure deixa de existir quando termina o bloco.
+ 
+ * Um Sessão do Oracle começa quando vc se conecta e termina quando vc se desconecta do banco
+   de dados Oracle.
+
+--
+-- Seção 19 - Criando Packages de Banco de Dados
+--
+-- Aula 2 - Criando o Package Specification 
+--
+
+-- Criando o Package Specification 
+
+create or replace PACKAGE PCK_EMPREGADOS
+IS  --> IS ou AS tanto faz!
+
+	gMinSalary     employees.salary%TYPE; -- Variavel Global publica q tem valor durante toda a sessao
+
+	PROCEDURE PRC_INSERE_EMPREGADO
+	(pfirst_name    IN VARCHAR2,
+	 plast_name     IN VARCHAR2,
+	 pemail         IN VARCHAR2,
+	 pphone_number  IN VARCHAR2,
+	 phire_date     IN DATE DEFAULT SYSDATE,
+	 pjob_id        IN VARCHAR2,
+	 pSALARY        IN NUMBER,
+	 pCOMMICION_PCT IN NUMBER,
+	 pMANAGER_ID    IN NUMBER,
+	 pDEPARTMENT_ID IN NUMBER);
+
+	PROCEDURE PRC_AUMENTA_SALARIO_EMPREGADO
+	(pemployee_id   IN NUMBER,
+	 ppercentual    IN NUMBER);
+
+	FUNCTION FNC_CONSULTA_SALARIO_EMPREGADO
+	(pemployee_id   IN NUMBER)
+	RETURN NUMBER;
+
+END PCK_EMPREGADOS;
+
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+
 
 
 
