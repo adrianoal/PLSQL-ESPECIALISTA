@@ -3827,7 +3827,31 @@ END PCK_EMPREGADOS;
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------
+68.Vantagens e Benefícios do uso de Packages 
 
+ * Organização de procedures e functions de banco de dados, agrupando procedures e funções
+   relacionadas. 
+   Ex. de organização --> No processo de ETL colocar todas as procedures daquele ETL em uma 
+   package.
+   
+ * Modularidade do desenvolvimento da Aplicação
+
+ * Possibilita a criação de identificadores globais que podem ser referenciados durante a 
+  sessão.
+  
+ * Performance - toda package é colocada na memória na primeira chamada, redusindo acesso a 
+   disco, visto q estatisticamente é muito provável que outros componentes package deverão ser
+   referênciados.
+   
+ * Gerenciamento de procedures e funções mais simples 
+ 
+ * Gerenciamento de segurança mais simples 
+  Necessário somente o privilégio de execução para a package.
+ 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+   
+   
 
 
 
