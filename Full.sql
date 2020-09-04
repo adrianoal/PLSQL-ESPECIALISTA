@@ -3359,9 +3359,46 @@ END;
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------
-  
+Seção 19:PL/SQL Fundamentos - Package de Banco de Dados 
 
-Seção 18:PL/SQL - 60.Debugando Procedures e Functions
+61.Criando Packages de Banco de Dados - Conceito
+
+
+ -- O QUE É UMA PACKAGE?
+ -----------------------
+ 
+ * Uma Package é um pacote composto de duas áreas (Package Specification)e um corpo 
+  (Package Body) armazenados separadamente no banco de dados.
+  
+ * A especificação é a interface pública para a aplicação e declara as construções disponíveis
+   para uso público.
+
+ * O Corpo implementa a especificação 
+
+ * Uma package assim como as procedures e function ficam armazenadas no banco de dados e podem
+   ser compartilhadas com várias aplicações.
+   
+ * O maior benefício é que na primeira vez em que uma construção da package for referênciada, 
+   toda a package é carregada em memória.
+   * Organização
+   * Performance, pq ficará em memória
+   
+ -- COMPONENTES DE UMA PACKAGE:
+ ------------------------------
+ 
+ Variáveis
+ Constante
+ Cursor
+ Exceção
+ Procedure
+ Função 
+ 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+Seção 19:PL/SQL 61.Criando Packages de Banco de Dados - Conceito
+ 
+
+  
 
 
 
