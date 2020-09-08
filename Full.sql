@@ -3919,7 +3919,8 @@ Seção 20:PL/SQL Fundamentos - Database DML Triggers
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------
-Seção 20:PL/SQL 69.Database DML Triggers
+70.database DML Triggers a Nível de Comando
+
 
  * A Trigger a nível de coluna é disparado uma única vez, mesmo que o fetch manipule várias 
    linhas.
