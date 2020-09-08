@@ -3992,14 +3992,196 @@ END;
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------
+71.Database DML Triggers a Nível de Linha 
+
+ * Triggers a nível de linha podem ser disparadas antes ou depois da manipulação da linha, para
+   cada linha afetada pelo comando.
+   
+ * Se o comando não afetar nehuma linha, a trigger a nível de linha não será disparada.
+
+ * A claúsula FOR EACH ROW --> Significa q é uma trigger a nível de linha 
+ 
+ 
+ -- PSEUDO CAMPOS :OLD e :NEW 
+ ----------------------------
+ 
+ * Dentro de triggers em nível de linhas é possível referenciar os valores existentes antes da 
+   manipulação de dados através do qualificador :OLD, e os valores a serem aplicados pela
+   manipulação de dados com o qualificador :NEW
+   
+ * Os qualificadores :OLD e :NEW podem ainda ser substituídos por outros qualificadores através
+   da cláusula opcional REFERENCING
 
 
+ -- PSEUDOCAMPOS :OLD e :NEW 
+ --------------------------- 
+ 
+ Operação		Valor :old.coluna		Valor :new.coluna 
 
+INSERT 			NULL 					Valor inserido para a coluna 
 
+UPDATE 			Valor da coluna			Valor da coluna após o update 
+				antes do UPDATE 		
 
+DELETE 			Valor da coluna			NULL
+				antes do DELETE
 
+ * Obs: Caso não queira usar as palavras :OLD e :NEW, podem ser substituídas pela cláusula 
+   REFERENCING, porém, isso não faz muito sentido, mas é possível.
+   
 
+ -- Exemplo Prático:
+ -------------------
+   
+--
+-- Seção 20 - Database DML Triggers
+--
+-- Aula 3 - Database DML Triggers a Nível de Linha
+--
 
+-- Database DML Triggers a Nível de Linha
+
+-- Criando a Tabela de  Log de Auditoria para a Tabela EMPLOYEES para a coluna SALARY
+
+DROP TABLE employees_log;
+
+CREATE TABLE employees_log
+(employees_log_id NUMBER (11) NOT NULL,
+ dt_log    DATE DEFAULT SYSDATE NOT NULL ,
+ usuario   VARCHAR2(30),
+ evento    CHAR(1) NOT NULL,
+ employee_id  NUMBER(6) NOT NULL,
+ salary_old  NUMBER(8,2),
+ salary_new  NUMBER(8,2));
+ 
+ALTER TABLE employees_log
+ADD CONSTRAINT employees_log_pk PRIMARY KEY (employees_log_id);
+
+CREATE SEQUENCE employees_log_seq
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE
+NOMAXVALUE;
+
+-- Criando uma Trigger que gera Log de Auditoria para a Tabela EMPLOYEES para a coluna SALARY 
+
+CREATE OR REPLACE TRIGGER A_IUD_EMPLOYESS_R_TRG
+  AFTER INSERT OR UPDATE OF SALARY OR DELETE 
+  ON EMPLOYEES
+  FOR EACH ROW
+DECLARE
+	vevento       employees_log.evento%TYPE;
+	vemployee_id  employees_log.employee_id%TYPE;
+BEGIN
+	CASE
+		WHEN INSERTING 
+        THEN
+			vevento      := 'I';
+			vemployee_id := :new.employee_id;
+		WHEN UPDATING 
+        THEN
+			vevento      := 'U';
+			vemployee_id := :new.employee_id;
+		ELSE
+			vevento      := 'D';
+			vemployee_id := :old.employee_id;
+	END CASE;
+	INSERT INTO employees_log
+		(employees_log_id, 
+         dt_log, 
+         usuario, 
+         evento, 
+         employee_id, 
+         salary_old, 
+         salary_new)
+	VALUES
+		(employees_log_seq.nextval,
+		 SYSDATE,
+		 USER,
+		 vevento,
+		 vemployee_id,
+		 :old.salary,
+		 :new.salary);
+END A_IUD_EMPLOYESS_R_TRG;
+
+-- Testando o disparo da Trigger
+
+UPDATE employees 
+SET    salary = salary * 1.5;
+
+-- Desabilitando a Trigger B_IUD_VALIDA_HORARIO_EMPLOYEES_S_TRG para poder testar a Trigger fora do horário comercial
+
+alter trigger B_IUD_VALIDA_HORARIO_EMPLOYEES_S_TRG disable;
+alter trigger B_IUD_VALIDA_HORARIO_EMPLOYEES_S_TRG enable;
+
+-- Testando a TRIGGER
+
+UPDATE employees 
+SET    salary = salary * 1.5;
+
+-- Consultando a Tabela employees_log
+
+SELECT *
+FROM   employees_log;
+
+COMMIT;
+ 
+-- Limpando a tabela de Log
+
+DELETE FROM employees_log;
+
+COMMIT;
+
+SELECT *
+FROM   employees_log;
+
+-- Cláusula WHEN
+
+CREATE OR REPLACE TRIGGER A_IUD_EMPLOYESS_R_TRG
+  AFTER INSERT OR UPDATE OF SALARY OR DELETE 
+  ON EMPLOYEES
+  FOR EACH ROW
+  WHEN (new.job_id <> 'AD_PRES') -- Ou seja, nao vai guardar log p/ o presidente da empresa
+DECLARE
+	vevento       employees_log.evento%TYPE;
+	vemployee_id  employees_log.employee_id%TYPE;
+BEGIN
+	CASE
+		WHEN INSERTING THEN
+			vevento      := 'I';
+			vemployee_id := :new.employee_id;
+		WHEN UPDATING THEN
+			vevento      := 'U';
+			vemployee_id := :new.employee_id;
+		ELSE
+			vevento      := 'D';
+			vemployee_id := :old.employee_id;
+	END CASE;
+	INSERT INTO employees_log
+		(employees_log_id, dt_log, usuario, evento, employee_id, salary_old, salary_new)
+	VALUES
+		(employees_log_seq.nextval,
+		 SYSDATE,
+		 USER,
+		 vevento,
+		 vemployee_id,
+		 :old.salary,
+		 :new.salary);
+END A_IUD_EMPLOYESS_R_TRG;
+
+-- Testando a TRIGGER
+
+UPDATE employees 
+SET    salary = salary * 1.5;
+
+SELECT *
+FROM   employees_log;
+
+COMMIT;
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
