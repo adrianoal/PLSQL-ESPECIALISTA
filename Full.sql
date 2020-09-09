@@ -4401,11 +4401,32 @@ ALTER TABLE employees DISABLE ALL TRIGGERS;
 
 ALTER TABLE employees ENABLE ALL TRIGGERS;
 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+74.Consultando Database DML Triggers pelo Dicionário de Dados 
+
+ * Consultando as Triggers através das visões do dicionário de dados:
+   
+ USER_TRIGGERS
+ ALL_TRIGGERS
+ DBA_TRIGGERS
 
 
+--
+-- Seção 20 - Database DML Triggers
+--
+-- Aula 6 - Consultando Database DML Triggers pelo Dicionário de Dados
+--
 
+-- Consultando Database DML Triggers pelo Dicionário de Dados
 
+SELECT *
+FROM   user_triggers
+WHERE  table_name = 'EMPLOYEES'  AND
+       table_owner = 'HR';
 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
