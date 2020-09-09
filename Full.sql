@@ -4613,15 +4613,17 @@ Seção 24:PL/SQL Avançado - Bulk Collect
  ----------
  PL/SQL --> Executado pelo PL/SQL Statement executador
  SQL 	--> Executado pelo SQL Statement executador
+
+-- Runtime -- Tempo de Execução
+-- Engine --> mecanismo/Motor
  
- 
- * Quando O PL/SQL runtime engine encontra um comando SQL, ele para e passa o comando SQL
-   para o SQL Engine.
+ * Quando O PL/SQL runtime engine(tempo de execução do mecanismo) encontra um comando SQL, 
+   ele para e passa o comando SQL para o SQL Engine.
    
  * O SQL Engine executa o comando SQL e retorna a informação de volta para o PL/SQL Engine
 
  * Esta tranferência de controle é chamada de CONTEXT SWITCH, e cada uma destas trocas de 
-   contexto incorre em sobrecarga(overhead) que deteriora a performance do seu programa.
+   contexto gera(incorre) em sobrecarga(overhead) que deteriora a performance do seu programa.
 
    
  -- Como podemos diminuir está perda de performance?
@@ -4657,9 +4659,52 @@ Seção 24:PL/SQL Avançado - Bulk Collect
  
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+84.Associative Array of records - Bulk Collect
 
+ -- SINTAXE:
+ 
+DECLARE 
+TYPE employees_table_type IS TABLE OF employees%ROWTYPE;
 
+employees_table employees_table_type;
 
+ Obs: toda ocorrencia do Associative Array vai conter todos os campos da tabela.
+ 
+
+ -- EXEMPLO PRÁTICO:
+ -------------------
+ 
+--
+-- Seção 24 - PL/SQL Avançado - Bulk Collect
+--
+-- Aula 2 - Associative Array of Records - Bulk Collect
+--
+
+-- Associative Array of Records - Bulk Collect
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  TYPE employees_table_type IS TABLE OF employees%rowtype
+  INDEX BY BINARY_INTEGER;  -- Type Associative Array
+  employees_table  employees_table_type;
+BEGIN
+  SELECT *
+    BULK COLLECT INTO employees_table 
+  FROM employees;
+  FOR i IN employees_table.first..employees_table.last  
+  LOOP
+    DBMS_OUTPUT.PUT_LINE(employees_table(i).employee_id || ' - ' || 
+                         employees_table(i).first_name || ' - ' || 
+                         employees_table(i).last_name || ' - ' ||
+                         employees_table(i).phone_number || ' - ' ||
+                         employees_table(i).job_id || ' - ' ||
+                         TO_CHAR(employees_table(i).salary,'99G999G999D99'));   
+  END LOOP;
+END;
+ 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
