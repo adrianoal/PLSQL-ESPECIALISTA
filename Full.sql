@@ -4596,10 +4596,67 @@ execute PRC_DISPLAY_EMPOYEES2(100)
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+Seção 24:PL/SQL Avançado - Bulk Collect 
 
+83.Bulk Collect 
 
+ -- CONTEXT SWITCH e PERFORMANCE:
+ --------------------------------
+
+ * A maioria dos programas PL/SQL incluem comandos PL/SQL e comandos SQL 
+
+ * Comandos PL/SQL são executados pelo PL/SQL Statement executador
+
+ * Comandos SQL são executados pelo SQL Statement executador 
+
+ -- RESUMO:
+ ----------
+ PL/SQL --> Executado pelo PL/SQL Statement executador
+ SQL 	--> Executado pelo SQL Statement executador
  
+ 
+ * Quando O PL/SQL runtime engine encontra um comando SQL, ele para e passa o comando SQL
+   para o SQL Engine.
+   
+ * O SQL Engine executa o comando SQL e retorna a informação de volta para o PL/SQL Engine
 
+ * Esta tranferência de controle é chamada de CONTEXT SWITCH, e cada uma destas trocas de 
+   contexto incorre em sobrecarga(overhead) que deteriora a performance do seu programa.
+
+   
+ -- Como podemos diminuir está perda de performance?
+ ---------------------------------------------------
+ 
+ Bull Collect 
+ 
+ * Comando SELECT que recupera múltiplas linhas com um único FETCH, incrementando a performance
+   da recuperação dos dados. 
+   
+ Para isso  
+  
+ * Utilizamos a funcionalidade BULK COLLECT para realizar o FETCH das linhas recuperadas pelo
+   comando SELECT e armazenar em uma Collection.
+  
+   
+ O SELECT utilizando o Bulk Collect vai preencher uma collect com todas as linhas recuperadas
+ pelo SELECT e o programa vai poder tratar essas linhas recuperadas lendo o Array q está em 
+ memória, dessa forma vai ter um ganho de performance, porque, vai reduzir as trocas de contexto 
+ entre 
+ PL/SQL Engine 
+ SQL Engine
+ 
+ 
+ Obs: Mesmo assim, é necessário utilizar o Bulk Collect com muita moderação, se o SELECT 
+ lê muitas linhas exemplo(Milhões de linhas), essa collect vai ser muito grande, e com isso
+ vai acontecer um consumo muito grande de memória, e essa memória é compartilhada com todas
+ as sessões que utilizam o Oracle, e com isso vai deteriorar a performance inteira da empresa
+ em relação ao Oracle.
+ 
+ Este preblema pode ser resolvido utilizando a cláusula LIMITED q veremos na seção a seguir
+ onde vamos aprender sobre o FOR ALL com BULK COLLECT e a cláusula LIMITED.
+ 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
