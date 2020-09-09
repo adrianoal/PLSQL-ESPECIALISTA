@@ -4449,10 +4449,13 @@ DROP TRIGGER B_IUD_VALIDA_HORARIO_EMPLOYEES_S_TRG;
 76.Apresentação do Curso 
 
 Bem vindo ao curso!!!
+ O professor Emílio, inverteu a ordem, deveria estar no início...
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+Seção 21:PL/SQL Avançado - Instalação do Oracle Database 18c XE
 
+77.Download e Instalação do Oracle Database 18c XE
 
 
 
