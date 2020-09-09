@@ -1388,7 +1388,7 @@ Seção 11:PL/SQL Fundamentos - Tipos Compostos - Collectons
    
  * Basta atribuir um valor para a ocorrencia do Associative Array 
  
- * Pode ser indexado com qualquer valor númerico,o q significa valores negativos, positivos ou
+ * Pode ser indexado com qualquer valor númerico, o q significa valores negativos, positivos ou
    tbm o zero.
    
  * Pode ser indexado tbm por strings de caracteres
@@ -4180,6 +4180,191 @@ FROM   employees_log;
 
 COMMIT;
 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+72.Regras de Multating Tables 
+
+ * São chamadas Multating Tables aquelas tabelas q estão sofrendo alterações durante a execução
+   da Trigger.
+   
+ * A tabela à qual a trigger está associada é sempre uma multating Table, assim como qualquer
+   tabela ligada à essa através de chave estrangeira FK.
+
+ * Essas características impedem que uma trigger em nível de linha enxergue um conjunto de 
+   dados inconsistentes(alterados, mas não confirmados).
+
+ -- O QUE NÃO PODE SER FEITO EM UM TRIGGER?   
+ ------------------------------------------
+ 
+ REGRA 1 DE MULTANTING TABLE 
+ 
+ * Regra 1 de Multating Tables:
+   Não altere dados em colunas de chaves primárias, chaves estrangeiras ou chaves únicas de 
+   tabelas relacionadas àquela na qual a trigger disparada está associada.
+   
+ * Essa restriçõa é válida para todas triggers em nível de linhas.
+
+ * Essa restrição é válida para todas as triggers em nível de comando disparada como resultado 
+   de uma operação DELETE CASCADE.
+   Obs: Se vc não usa delete cascade, então não se aplica em nível de comando.
+   
+   
+
+ REGRA 2 DE MULTANTING TABLE 
+ 
+ * Regra 2 de Multating Tables: 
+   Não leia informações de tabelas q estejam sendo modificadas.
+   
+ * Essa restrição é válida para todas triggers em nível de linhas
+
+ * Essa restrição é válida para todas triggers em nível de comando disparada como resultado 
+   de uma operação DELETE CASCADE.
+   Obs: Se vc não usa delete cascade, então não se aplica em nível de comando.
+   
+   
+ -- EXEMPLO PRATICO:
+ ------------------- 
+   
+--
+-- Seção 20 - Database DML Triggers
+--
+-- Aula 4 - Regras de Mutating Tables
+--
+
+-- Regras de Mutating Tables
+
+-- Violação da Regra 1 de Mutating Table
+
+/*
+Regra 1 de Mutating Tables: não altere dados em colunas de chaves primárias, 
+chaves estrangeiras ou chaves únicas de tabelas relacionadas àquela na qual 
+a trigger disparada está associada
+*/
+
+CREATE OR REPLACE TRIGGER A_I_EMPLOYEES_R_TRG
+AFTER INSERT 
+ON employees
+FOR EACH ROW
+BEGIN
+  UPDATE employees
+  SET    email = UPPER(SUBSTR(:new.first_name,1,1) || :new.last_name)
+  WHERE  employee_id = :new.employee_id;
+END;
+
+-- Testando Violação da Regra 1 
+
+SET VERIFY OFF
+BEGIN
+  PRC_INSERE_EMPREGADO('Eric', 'Clapton','ECLAPTON','515.188.4861',SYSDATE,'IT_PROG',15000,NULL,103,60);
+  COMMIT;
+END;
+
+-- Corrigindo a Trigger para que não viole a Regra 1
+
+CREATE OR REPLACE TRIGGER A_I_EMPLOYEES_R_TRG
+BEFORE INSERT 
+ON employees
+FOR EACH ROW
+BEGIN
+  :new.email := UPPER(SUBSTR(:new.first_name,1,1) || (:new.last_name)); -- Funcionou, pq nao usei um comando DML q viola a regra Nº1
+END;
+
+-- Testando a correção da Violação da Regra 1 
+SET VERIFY OFF
+BEGIN
+  PRC_INSERE_EMPREGADO('Eric', 'Clapton','ECLAPTON','515.188.4861',SYSDATE,'IT_PROG',15000,NULL,103,60);
+  COMMIT;
+END;
+
+-- Violação da Regra 2 de Mutating Table
+
+/*
+Regra 2 de Mutating Tables: Não leia informações de tabelas que estejam sendo modificadas
+*/
+
+CREATE OR REPLACE TRIGGER B_U_VALIDATE_SALARY_EMPLOYEES_R_TRG
+BEFORE UPDATE OF salary
+ON  employees
+FOR EACH ROW
+DECLARE
+  vMaxSalary  employees.salary%TYPE;
+BEGIN
+  SELECT MAX(salary)
+  INTO   vMaxSalary
+  FROM   employees;
+
+  IF  :new.salary > vMaxSalary * 1.2 
+  THEN  
+      RAISE_APPLICATION_ERROR(-20001, 'Salario não pode ser superior ao maior salario + 20%');
+  END IF;
+END;
+
+-- Testando Violação da Regra 2 
+
+SET VERIFY OFF
+UPDATE employees
+SET    salary = 70000
+WHERE  employee_id = 100;
+
+COMMIT;
+
+DROP TRIGGER A_I_EMPLOYEES_R_TRG;
+
+DROP TRIGGER B_U_VALIDATE_SALARY_EMPLOYEES_R_TRG;
+
+-- Resolvendo o problema de Mutating Tables
+
+CREATE OR REPLACE PACKAGE PCK_EMPLOYEES_DADOS 
+AS
+  TYPE max_salary_table_type IS TABLE OF NUMBER(10,2)
+  INDEX BY BINARY_INTEGER;
+  
+  gMaxSalary  max_salary_table_type;
+
+END PCK_EMPLOYEES_DADOS;
+
+CREATE OR REPLACE TRIGGER B_IU_VALIDATE_SALARY_EMPLOYEES_S_TRG
+BEFORE INSERT OR UPDATE OF salary
+ON  employees
+DECLARE
+  vMaxSalary  employees.salary%TYPE;
+BEGIN
+  SELECT MAX(salary)
+  INTO   PCK_EMPLOYEES_DADOS.gMaxSalary(1)-- variavel global pq foi declarado no package specification, q é um assossiative array, na ocorrencia 1, da package --> PCK_EMPLOYEES_DADOS
+  FROM   employees;
+END;
+
+CREATE OR REPLACE TRIGGER B_IU_VALIDATE_SALARY_EMPLOYEES_R_TRG
+BEFORE INSERT OR UPDATE OF salary
+ON  employees
+FOR EACH ROW
+DECLARE
+  vMaxSalary  employees.salary%TYPE;
+BEGIN
+  IF  :new.salary  > PCK_EMPLOYEES_DADOS.gMaxSalary(1) * 1.2 -- Ou seja, para nao violar a regra, basta referenciar a variavel global
+  THEN  
+      RAISE_APPLICATION_ERROR(-20001, 'Novo salario não pode ser superior ao maior salario + 20%');
+  END IF;
+END;
+
+-- Testando Violação da Regra 2 
+
+SET VERIFY OFF
+UPDATE employees
+SET salary = 70000
+WHERE employee_id = 100;
+
+COMMIT;
+
+ * A solução para não violar as regras de Multanting Table a nível de comando vc de criar arrays
+   definidos em uma package Spacification, conforme vimos nos exempos acima.
+   
+ * Para a triggers a nível de linha, vc deve ler os valores colocados no array da package
+   specification, pra fazer o que vc deseja fazer. Dessa forma não viola as regras de 
+   Multating Table.
+
+ * Obs: Sempre observar se não vai honerar a performace da aplicação.
+        A melhor solução criar procedures ou functions...
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
 
