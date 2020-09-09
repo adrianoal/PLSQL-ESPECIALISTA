@@ -4475,11 +4475,130 @@ Seção 21:PL/SQL Avançado - Instalação do Oracle Database 18c XE
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+Seção 22:PL/SQL Avançado - Instalação do Oracle SQL Developer 
+
+81.Download instalação e Configuração de conexões do Oracle SQL Developer 
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+Seção 23:PL/SQL Avançado Utilizando SYS_REFCURSOR 
+
+82.Utilizando SYS_REFCURSOR 
 
 
+ * SYS_REFCURSOR é um tipo declarado no pacote STANDARD(pacote default do PL/SQL)
+ 
+ * É uma declaração "fraca" do Tipo Cursor IS REF CURSOR 
+ 
+ * Uma variável Cursor é uma variável que aponta para um cursor ou para um result set.
+ 
+ * Você pode passar/receber uma variável cursor como argumento para uma procedure ou function
+ 
+ -- Exemplo Prático:
+ -------------------
+ 
+ 
+--
+-- Seção 23 - PL/SQL Avançado - Utilizando SYS_REFCURSOR
+--
+-- Aula 1 - Utilizando SYS_REFCURSOR
+--
+
+-- Utilizando SYS_REFCURSOR
+
+CREATE OR REPLACE PROCEDURE PRC_CURSOR_EMPLOYEES
+  (pemployees_cursor OUT SYS_REFCURSOR) -- retorna como saida um cursor
+IS
+BEGIN
+  OPEN pemployees_cursor 
+  FOR
+	SELECT first_name, last_name -- retorna como saida o result set do cursor. Ou seja, as linhas resultantes do SELECT
+	FROM employees;
+	
+END PRC_CURSOR_EMPLOYEES;
+
+-- Procedure referenciando o Parametro OUT SYS_REFCURSOR
+
+CREATE OR REPLACE PROCEDURE PRC_DISPLAY_EMPOYEES
+IS
+  employees_cursor  SYS_REFCURSOR;
+  vfirst_name  employees.first_name%TYPE;
+  vlast_name   employees.last_name%TYPE;
+BEGIN
+  PRC_CURSOR_EMPLOYEES(employees_cursor);
+  
+  LOOP
+    FETCH  employees_cursor
+    INTO   vfirst_name, vlast_name;
+    EXIT   WHEN employees_cursor%NOTFOUND;
+	
+    DBMS_OUTPUT.PUT_LINE(vfirst_name || ' ' || vlast_name);
+
+  END LOOP;
+  
+  CLOSE employees_cursor;
+  
+END PRC_DISPLAY_EMPOYEES;
+
+-- Executando a Procedure PRC_DISPLAY_EMPOYEES
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF -- Nao exie o codigo fonte, quando executa o objeto.
+execute PRC_DISPLAY_EMPOYEES;
+
+-- Variável Cursor e Reference Cursor 
+
+CREATE OR REPLACE FUNCTION FNC_GET_EMPOYEES
+  (pemployee_id  IN NUMBER)
+  RETURN SYS_REFCURSOR -- retorna um cursor do tipo sys_refcursor
+IS
+  employees_cursor  SYS_REFCURSOR;
+BEGIN
+  OPEN employees_cursor  
+  FOR
+    SELECT first_name, last_name
+    FROM   employees
+    WHERE  employee_id = pemployee_id;
+    
+  RETURN employees_cursor;
+  
+END FNC_GET_EMPOYEES;
+
+-- Procedure que Referenciando a Função
+
+CREATE OR REPLACE PROCEDURE PRC_DISPLAY_EMPOYEES2
+  (pemployee_id IN NUMBER)
+IS
+  employees_cursor  SYS_REFCURSOR; -- retornara o result set do cursor
+  vfirst_name  employees.first_name%TYPE;
+  vlast_name   employees.last_name%TYPE;
+BEGIN
+  employees_cursor := FNC_GET_EMPOYEES(pemployee_id);
+  
+  LOOP
+    FETCH  employees_cursor
+    INTO   vfirst_name, vlast_name;
+    EXIT WHEN employees_cursor%NOTFOUND;
+	
+    DBMS_OUTPUT.PUT_LINE(vfirst_name || ' ' || vlast_name);
+
+  END LOOP;
+  
+  CLOSE employees_cursor;
+END PRC_DISPLAY_EMPOYEES2;
+
+-- Executando a procedure 
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+execute PRC_DISPLAY_EMPOYEES2(100)
 
 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
+
+ 
 
 
 
