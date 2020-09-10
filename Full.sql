@@ -4821,13 +4821,126 @@ BEGIN
 END;
 
 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+Seção 25:PL/SQL Avançado - Bulk Collect - FOR ALL e LIMIT
+
+88.Bulk Collect e For ALL
 
 
+ * FOR ALL é um recurso utilizado para diminuir significativamente a troca de contexto 
+   (CONTEXT SWITCH), e com isso se tem um ganho de performance.
+   
+ 
+ * Comandos INSERT, UPDATE e DELETE utilizam Collections para modificar múltiplas linhas de 
+   dados muito rapidamente.
+   
+ * Nós utilizaremos a funcionalidade FOR ALL para executar comandos DML para todas as linhas de
+   uma Collection.
+   
+ * FOR ALL empacota as atualizações para o SQL Engine com um único context switch.
+  Com isso tem um grande ganho de performance em relação a um FOR normal.
+  
+   Obs: O FOR ALL só permite um comando DML, se tiver um processamento q não seja um único 
+        comando DML, aí precisa usar um FOR normal.
+ 
 
 
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 25 - Bulk Collect e FOR ALL
+--
+-- Aula 1 - Bulk Collect - FOR ALL
 
+-- Bulk Collect 
 
+SELECT count(*)
+FROM   employees;
 
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+CREATE OR REPLACE PROCEDURE PRC_UPDATE_SALARY(ppercentual IN NUMBER)
+AS
+  TYPE employee_id_table_type IS TABLE OF employees.employee_id%TYPE 
+  INDEX BY BINARY_INTEGER;  -- Type Associative Array
+  employee_id_table  employee_id_table_type;
+BEGIN
+  SELECT DISTINCT employee_id 
+    BULK COLLECT INTO employee_id_table  
+  FROM employees;
+  
+  DBMS_OUTPUT.PUT_LINE('Linhas recuperadas: ' || employee_id_table.COUNT);
+  
+  FOR indice IN 1..employee_id_table.COUNT  LOOP 
+    UPDATE employees e
+    SET    e.salary = e.salary * (1 + ppercentual / 100)
+    WHERE  e.employee_id = employee_id_table(indice);   -- para cada UPDATE dentro do FOR LOOP Ocorrerá troca de contexto (Context Switch) 
+	--
+    -- outro comandos
+    --
+  END LOOP;
+	
+END;
+
+-- Consultando antes
+
+SELECT *
+FROM employees;
+
+--- Executando PRC_UPDATE_TAX 
+
+exec PRC_UPDATE_SALARY(10)
+
+-- Consultando depois
+
+SELECT *
+FROM employees;
+
+ROLLBACK;
+
+-- Bulk Collect - FOR ALL
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+CREATE OR REPLACE PROCEDURE PRC_UPDATE_SALARY(ppercentual IN NUMBER)
+AS
+  TYPE employee_id_table_type IS TABLE OF employees.employee_id%TYPE 
+  INDEX BY BINARY_INTEGER;  -- Type Associative Array
+  employee_id_table  employee_id_table_type;
+BEGIN
+
+  SELECT DISTINCT employee_id 
+    BULK COLLECT INTO employee_id_table  
+  FROM employees;
+  
+  DBMS_OUTPUT.PUT_LINE('Linhas recuperadas: ' || employee_id_table.COUNT);
+  
+  FORALL indice IN 1..employee_id_table.COUNT  -- FOR ALL empacota todos os UPDATES e envia o pacote em 1 única troca de contexto (Context Switch)
+    UPDATE employees e
+    SET    e.salary = e.salary * (1 + ppercentual / 100)
+    WHERE  e.employee_id = employee_id_table(indice); -- Obs; O ., é o proprio end do FORALL
+	     
+END;
+
+-- Consultando
+
+SELECT *
+FROM employees;
+
+--- Executando PRC_UPDATE_TAX 
+
+exec PRC_UPDATE_SALARY(10)
+
+-- Consultando
+
+SELECT *
+FROM employees;
+
+ROLLBACK;
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
