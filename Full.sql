@@ -4877,7 +4877,7 @@ BEGIN
     SET    e.salary = e.salary * (1 + ppercentual / 100)
     WHERE  e.employee_id = employee_id_table(indice);   -- para cada UPDATE dentro do FOR LOOP Ocorrerá troca de contexto (Context Switch) 
 	--
-    -- outro comandos
+    -- outro comandos - se tivesse outros comandos, teria q usar o FOR normal
     --
   END LOOP;
 	
@@ -4941,6 +4941,99 @@ ROLLBACK;
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+89.Bulk Collect com LIMIT 
+
+ * Collections PL/SQL são essencialmente arrays em memória.
+   
+   Obs. Quando um collection tem muitas(milhões) de linhas, vai consumir muita memória e essa 
+   memória fica no instância do Banco de Dados Oracle, ou seja, essa memória está sendo 
+   compartilhada por todos os usuário que estão conectados ao banco de dados, portanto, se 
+   vc consome muita memória, vai sobrar pouca memória para outros programas que estão rodando
+   simultâneamente.
+   
+ * Collections muito grandes consomem grandes quantidades de memória o que pode degradar o
+   sistema.
+   
+ * Em algumas situações, pode ser necessário dividir os dados processados em pedaços para  
+   tornar o código mais eficiente quanto ao consumo de memória.
+   
+ * Está divisão pode ser alcançada utilizando a cláusula LIMIT para a sintaxe do BULK COLLECT
+
+
+ -- EXEMPLO PRÁTICO:
+ ------------------- 
+
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 25 - Bulk Collect e FOR ALL
+--
+-- Aula 2 - Bulk Collect - FOR ALL e LIMIT
+
+-- Bulk Collect - FOR ALL
+
+SELECT COUNT(*)
+FROM employees;
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+CREATE OR REPLACE PROCEDURE PRC_UPDATE_SALARY2(ppercentual IN NUMBER)
+AS
+  vLimit CONSTANT INTEGER(2) := 30;
+  
+  TYPE employee_id_table_type IS TABLE OF employees.employee_id%TYPE 
+  INDEX BY BINARY_INTEGER;  -- Type Associative Array
+  employee_id_table  employee_id_table_type;
+  
+  CURSOR employees_cursor IS
+    SELECT employee_id 
+    FROM employees;
+    
+BEGIN
+
+  OPEN employees_cursor;
+  
+      LOOP
+        FETCH employees_cursor 
+            BULK COLLECT INTO employee_id_table LIMIT vlimit;    
+        EXIT WHEN employee_id_table.COUNT = 0;
+        
+        DBMS_OUTPUT.PUT_LINE('Linhas recuperadas: ' || employee_id_table.COUNT);
+        
+        FORALL indice IN 1..employee_id_table.COUNT 
+          
+          UPDATE employees e
+          SET    e.salary = e.salary * (1 + ppercentual / 100)
+          WHERE  e.employee_id = employee_id_table(indice);  -- FORALL termina com ;
+        
+      END LOOP;
+  
+  CLOSE employees_cursor;
+  -- COMMIT;
+  
+END;
+
+ * Embora possa ter muitos UPDATES só vai haver uma troca de contexto (CONTEXT SWITCH).
+   Se fosse o FOR normal, faria várias mudanças de contexto.
+
+SELECT *
+FROM employees;
+
+--- Executando PRC_UPDATE_SALARY2 
+
+exec PRC_UPDATE_SALARY2(10)
+
+-- Consultando
+
+SELECT *
+FROM employees;
+
+ROLLBACK;
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+
+
 
 
 
