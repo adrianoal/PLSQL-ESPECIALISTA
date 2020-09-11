@@ -5126,9 +5126,6 @@ exec PRC_FETCH_EMPLOYEES_DYNAMIC;
    A primeira regra na programação é não complicar...
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
-Seção 26: PL/SQL Avançado - SQL Dinâmico - Execute Immediate e variáveis Bind 
-
-90.SQL Dinâmico - Execute immediate
 
 
 
