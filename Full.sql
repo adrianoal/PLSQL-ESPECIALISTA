@@ -5442,7 +5442,7 @@ BEGIN
     WHEN pmanager_id IS NULL AND pdepartment_id IS NOT NULL THEN
          OPEN employees_cursor FOR vsql USING pdepartment_id;
     ELSE
-         OPEN employees_cursor FOR vsql;
+         OPEN employees_cursor FOR vsql; -- Após dar o Open do cursor ela fica no result SET da SGA Shared Pool
   END CASE;  
   
   LOOP
