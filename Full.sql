@@ -5261,9 +5261,131 @@ exec PRC_FETCH_EMPLOYEES_DYNAMIC_BIND;
  
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+Seção 27: PL/SQL Avançado - SQL Dinâmico - DBMS_SQL 
 
 
+92.SQL Dinâmico - DBMS_SQL 
 
+ * A Package DBMS_SQL foi introduzida no Oracle a partir da versão 7, protanto, nessa época 
+   não existia o comando execute immediate, então para fazer um programa com SQL Dinâmico
+   era preciso utilizar essa package --> DBMS_SQL...
+   
+ * Nas versões > 7 vc pode usar a package DBMS_SQL, porém, usar o SQL dinâmico
+   (em tempo de execução) execute immediate é muito mais fácil.
+   
+ * Geração e execução de comandos SQL em tempo de execução.
+
+ * Quando vc precisa executar um comando SQL DDL dentro do seu programa PL/SQL.
+   -- A únicas forma de executar um comando DDL dentro do bloco é através do SQL Dinâmico..
+ * O número ou tipo de dados de entradas e saídas é variável.
+
+ 
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 27 - SQL Dinâmico -  DBMS_SQL
+
+-- Aula 1 - SQL Dinamico - DBMS_SQL
+
+-- SQL Dinamico - DBMS_SQL
+
+-- Comando DML
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+CREATE OR REPLACE PROCEDURE PRC_UPDATE_SALARY_EMPLOYEE (pemployee_id IN employees.employee_id%TYPE,
+                                                        ppercentual  IN NUMBER)
+IS
+  vcursor_id       INTEGER; -- Vai receber o ID de um cursor
+  vrows_processed  INTEGER; -- Essa variavel vai receber o n de linhas processadas pelo cursor 
+BEGIN
+
+  -- OPEN Cursor
+  vcursor_id  := DBMS_SQL.OPEN_CURSOR;
+  
+  -- Parsing comando SQL
+  DBMS_SQL.PARSE(vcursor_id, 'UPDATE employees
+                              SET    salary = salary * (1 + (:gpercentual/100))
+                              WHERE  employee_id = :gemployee_id', DBMS_SQL.NATIVE);
+
+  -- Binding Variáveis
+  DBMS_SQL.BIND_VARIABLE(vcursor_id, ':gpercentual', ppercentual);
+  DBMS_SQL.BIND_VARIABLE(vcursor_id, ':gemployee_id', pemployee_id);
+  
+  -- Executando o Cursor
+  vrows_processed := DBMS_SQL.EXECUTE(vcursor_id);
+  
+  -- CLOSE Cursor
+  DBMS_SQL.CLOSE_CURSOR(vcursor_id);
+  
+  --COMMIT;
+  
+EXCEPTION
+   WHEN OTHERS THEN 
+       RAISE_APPLICATION_ERROR(-20001,'Erro Oracle ' || SQLCODE || SQLERRM);
+END;
+
+-- Executando a procedure
+
+SELECT *
+FROM   employees;
+
+exec PRC_UPDATE_SALARY_EMPLOYEE(pemployee_id => 109, ppercentual => 10)
+
+SELECT *
+FROM   employees;
+
+ROLLBACK;		
+--------------
+-- 2º exemplo
+
+-- SQL Dinamico - DBMS_SQL
+
+-- Comando SELECT
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+
+  vcursor_id   INTEGER;
+  vrowcount    NUMBER;
+  vfirst_name  VARCHAR2(30);
+  vlast_name   VARCHAR2(30);
+
+BEGIN
+
+  vcursor_id  :=  DBMS_SQL.OPEN_CURSOR; -- OPEN_CURSOR é uma funcao q esta sendo aberta
+
+  DBMS_SQL.PARSE(vcursor_id,'SELECT first_name,last_name FROM employees', DBMS_SQL.NATIVE);
+
+  DBMS_SQL.DEFINE_COLUMN(vcursor_id,1,vfirst_name,30);
+
+  DBMS_SQL.DEFINE_COLUMN(vcursor_id,2,vlast_name,30);
+
+  vrowcount := DBMS_SQL.EXECUTE_AND_FETCH(vcursor_id);
+
+  LOOP
+
+    EXIT WHEN DBMS_SQL.FETCH_ROWS(vcursor_id) = 0;
+
+    DBMS_SQL.COLUMN_VALUE(vcursor_id,1,vfirst_name);
+
+    DBMS_SQL.COLUMN_VALUE(vcursor_id,2,vlast_name);
+
+    DBMS_OUTPUT.PUT_LINE(vlast_name||', '||vfirst_name);
+
+   END LOOP;
+
+   DBMS_SQL.CLOSE_CURSOR(vcursor_id);
+
+END;
+	  
+ Essa aila sobre a Package DBMS_SQL é ultilizadas apenas nas versões antigas do DB Oracle 
+ versão 7, foi importante conhecer, mas dificilmente será usado, para SQL dinâmico usar 
+ Execute immediate.
+ 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
