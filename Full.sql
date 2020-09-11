@@ -5126,8 +5126,141 @@ exec PRC_FETCH_EMPLOYEES_DYNAMIC;
    A primeira regra na programação é não complicar...
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+91.SQL Dinâmico - Execute Immediate e Variáveis Bind 
+
+ Bind Variáveis e Conseito de Parsing
+  
+ O Oracle tem uma arquitetura bastante complexa e eficiente de gerenciamento de memória.
+ 
+ * Quando se executa um comando SQL o Oracle consulta a shared pool, que é uma área de memória,
+   uma parte da SGA(System Global Área) para verificar se o comando já foi submetido antes.
+   
+ * Se o comando já está na shared pool, o plano de execução para o comando é recuperado, e 
+   o comando SQL é executado.
+   
+ * Cada vez que um comando é submetido (pela primeira vez desde quando a instância) do Oracle 
+  subiu, o Oracle verifica se está na Shared pool, quando isso acontece, é maravilhoso.
+  
+ * Se o comando não for encontrado na shared pool, o Oracle terá q executar o processo de 
+   parsing do comando, 
+   (no processo de parsing o Oracle através de um processo chamado optmize)vai escolher o 
+   melhor plano de execução, antes de executar o comando. Feito isso, ele vai salvar esse 
+   plano de execução na Shared Pool e executar o comando.
+   
+ * Este processo é conhecido como "hard parse" e em aplicações OLTP realizam milhares ou 
+   milhões de "hard parse" podem causar perda de performance.
+   
+  Uma forma de melhorar isso, é usar variáveis do tipo Bind.  
+    
+ * Utilizando BIND variáveis, nós reutilizamos o SQL parsing q foi feito na primeira vez q
+   o comando foi executado, evitando o Hard Parse.
+   
+   
+ * Quando se evita o Hard Parse isso é chamado de Soft Parse(Soft Parse, antecede o Hard Parse).
+ 
+ 
+ -- Como fazer isso com SQL Dinâmico?
+ ------------------------------------
+ 
+ * Geração e execução de comandos SQL em tempo de execução
+ 
+ * Quando vc precisa executar um comando SQL DDL dentro do seu programa PL/SQL
+ 
+ * O Número ou tipo de dados de entrada e saídas é variável
+ 
+ 
+ -- SINTAXE - EXECUTE IMMEDIATE 
+ ------------------------------
+ 
+EXECUTE IMMEDIATE 'SQL string'
+[INTO{variável[,variável]...
+		|record
+		|collection}]
+	[USING bind_argument
+		   [,bind_argument]...];
+	
+	
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 26 - SQL Dinâmico - Execute Immediate e variáveis Bind
+--
+-- Aula 2 - SQL Dinamico com EXECUTE IMMEDIATE e variáveis Bind
+
+-- SQL Dinamico - EXECUTE IMMEDIATE e variáveis Bind
 
 
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+CREATE OR REPLACE PROCEDURE PRC_FETCH_EMPLOYEES_DYNAMIC_BIND
+							(pmanager_id    IN employees.manager_id%TYPE DEFAULT NULL,
+							 pdepartment_id IN employees.department_id%TYPE DEFAULT NULL)
+AS
+  vemployees_record  employees%ROWTYPE;
+  vsql               VARCHAR2(600) := 'SELECT *
+                                       FROM employees
+                                       WHERE 1=1 ';
+  TYPE  employees_table_type IS TABLE OF employees%ROWTYPE   -- Associative Array
+  INDEX BY PLS_INTEGER;
+  employees_table            employees_table_type;
+  
+BEGIN
+
+  IF  pmanager_id IS NOT NULL THEN
+      vsql := vsql || ' AND manager_id = :manager_id'; -- esta referenciando a variavel Bind
+  END IF;
+  
+  IF  pdepartment_id IS NOT NULL THEN
+      vsql := vsql || ' AND department_id = :department_id'; -- esta referenciando a variavel Bind
+  END IF;
+  
+  DBMS_OUTPUT.PUT_LINE(vsql);
+  
+  CASE
+    WHEN pmanager_id IS NOT NULL AND pdepartment_id IS NOT NULL THEN
+         EXECUTE IMMEDIATE vsql BULK COLLECT INTO employees_table USING pmanager_id, pdepartment_id;
+    WHEN pmanager_id IS NOT NULL AND pdepartment_id is NULL THEN
+         EXECUTE IMMEDIATE vsql BULK COLLECT INTO employees_table USING pmanager_id;
+    WHEN pmanager_id IS NULL AND pdepartment_id IS NOT NULL THEN
+         EXECUTE IMMEDIATE vsql BULK COLLECT INTO employees_table USING pdepartment_id;
+    ELSE
+         EXECUTE IMMEDIATE vsql BULK COLLECT INTO employees_table;
+  END CASE;    
+  
+  FOR i IN 1..employees_table.COUNT  LOOP
+  
+    DBMS_OUTPUT.PUT_LINE(employees_table(i).employee_id || ' - ' ||
+                         employees_table(i).first_name || ' - ' ||
+                         employees_table(i).last_name || ' - ' ||
+                         employees_table(i).email || ' - ' ||
+                         employees_table(i).manager_id || ' - ' ||
+                         employees_table(i).department_id);
+    
+  END LOOP;
+  
+EXCEPTION
+  WHEN OTHERS THEN 
+       RAISE_APPLICATION_ERROR(-20001,'Erro Oracle ' || SQLCODE || SQLERRM);
+END;
+
+-- Executando a procedure
+
+exec PRC_FETCH_EMPLOYEES_DYNAMIC_BIND(pmanager_id => 103, pdepartment_id => 60)
+
+exec PRC_FETCH_EMPLOYEES_DYNAMIC_BIND(pmanager_id => 103)
+
+exec PRC_FETCH_EMPLOYEES_DYNAMIC_BIND(pdepartment_id => 60)
+
+exec PRC_FETCH_EMPLOYEES_DYNAMIC_BIND;	
+ 
+ 
+ Usando a variável Bind é melhor porque não precisa fazer o Hard Parse, apenas o Soft parse.
+ Obs: Se o objeto(procedure ou outro objeto) for utilizado pelo programa chamador com muita 
+ frequencia o ideal é usar com variável Bind. Performance é detalhes, nunca significa q é um 
+ problema, sempre são vários detalhes.
+ 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
