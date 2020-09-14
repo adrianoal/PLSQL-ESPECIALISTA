@@ -5752,7 +5752,7 @@ BEGIN
                          start_date     => SYSTIMESTAMP, -- data atual no formato timestamp
                          --start_date => TO_TIMESTAMP_TZ('2020-03-17 15:17:36.000000000 AMERICA/SAO_PAULO','YYYY-MM-DD HH24:MI:SS.FF TZR'), -- se eu fosse usar uma data fixa, teria que usar esse formato
                          repeat_interval  => 'FREQ=SECONDLY;INTERVAL=10', -- A cada segundo de Dez em Dez segundos
-                         end_date => TO_TIMESTAMP_TZ('2020-09-14 15:00:00.000000000 AMERICA/SAO_PAULO','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+                         end_date => TO_TIMESTAMP_TZ('2020-10-14 20:00:00.000000000 AMERICA/SAO_PAULO','YYYY-MM-DD HH24:MI:SS.FF TZR'),
                          comments => 'A cada 10 segundos'
                          );
 END;
@@ -5764,26 +5764,111 @@ BEGIN
                                   );
 END;
 
--- Criando um Schedule (a cada 10 segundos)
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+97.Criado um JOB
+
+ * Assim como um programa, um job é criado com status desabilitado. É necessário habilitá-los
+   explicitamente para que ele se torne ativo e agendado.
+   
+   
+ * Um job pode ser criado com os seguintes formatos:
+  
+	* Com um program, com um scheduler
+	* Com um program, sem um scheduler
+	* Sem um program, com um agendamento
+	* Sem um program, sem um agendamento
+	
+-- A SINTAXE PARA A CRIAÇAO DE JOB QUANDO SE TEM O PROGRAM E O SCHEDULER:
+DBMS_SCHEDULER.CREATE_JOB(job_name IN VARCHAR2,
+						  program_name IN VARCHAR2,
+						  scheduler_name IN VARCHAR2
+						  ); 
+
+
+
+-- A SINTAXE PARA A CRIAÇAO DE JOB QUANDO NÃOSE  TEM O PROGRAM E NÃO SE TEM O SCHEDULER:
+DBMS_SCHEDULER.CREATE_JOB(job_name IN VARCHAR2,
+						  program_type IN VARCHAR2,
+						  program_action IN VARCHAR2, -- pode ser um caminho 
+						  number_of_arguments IN PLS_INTEGER DEFAULT  0,
+						  start_date IN TIMESTAMP WITH TIMEZONE DEFAULT NULL,
+						  repeat_interval IN VARCHAR2,
+						  end_date IN TIMESTAMP WITH TIMEZONE FEDAULT NULL);
+
+
+ -- PARA ENTERROMPER A EXECUÇÃO DO JOB:
  
+DBMS_SCHEDULER.STOP_JOB(job_name IN VARCHAR2,
+						force IN BOOLEAN); -- Pode ser true ou false
+
+
+-- views do dicionário de dados que vão conter informações sobre Jobs
+
+USER_SCHEDULER_JOB_ARGS 		--> Agumentos configurados para todos os jobs
+USER_SCHEDULER_JOB_LOG 			--> Informações de log de todos os jobs
+USER_SCHEDULER_JOB_RUN_DETAILS	--> Detalhes de execuções de jobs
+USER_SCHEDULER_JOBS				--> Lista dos jobs agendados
+USER_SCHEDULER_PROGRAM_ARGS		--> Argumentos de todos os programas agendados
+USER_SCHEDULER_PROGRAMS 		--> Lista dos programas agendados
+USER_SCHEDULER_SCHEDULES		--> Agendamentos pertencentes ao usuário 
+
+
+-- EXEMPLO PRÁTICO PARA CRIAÇÃO DO JOBS	 
+
+
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 29 - Package DBMS_SCHEDULLER
+--
+-- Aula 4 - Criando um Job
+
+-- Criando um Job
+
+-- Conectar como SYS
+
+grant CREATE JOB to hr;
+
 BEGIN
-    DBMS_SCHEDULER.CREATE_SCHEDULE (
-        schedule_name  => 'SCH_A_CADA_10_SEGUNDOS',
-        start_date     => SYSTIMESTAMP,
-        -- start_date => TO_TIMESTAMP_TZ('2020-03-17 15:17:36.000000000 AMERICA/SAO_PAULO','YYYY-MM-DD HH24:MI:SS.FF TZR'),
-        repeat_interval  => 'FREQ=SECONDLY;INTERVAL=10',
-        end_date => TO_TIMESTAMP_TZ('2020-07-23 23:00:00.000000000 AMERICA/SAO_PAULO','YYYY-MM-DD HH24:MI:SS.FF TZR'),
-        comments => 'A cada 10 segundos'
-        );
+    DBMS_SCHEDULER.CREATE_JOB (job_name => '"HR"."JOB_INSERE_DATA_AGENDA"', -- nome do job
+                               program_name => '"HR"."PRC_INSERE_AGENDA"', -- ja temos o programa, so informar o nome
+                               schedule_name => '"HR"."SCH_A_CADA_10_SEGUNDOS"', -- ja temos o scheduler, so informar o nome
+                               enabled => TRUE,
+                               auto_drop => FALSE, -- se estivesse TRUE e apos a execuçao o job falhasse, ele removeria o job, nao quero isso
+                               comments => 'Job Insere Data na Agenda',             
+                               job_style => 'REGULAR' -- 
+                               );
+
+
+
+/*
+-- se eu nao tivesse habilitado o job, poderia utilizar ese comando para habilitá-lo
+    DBMS_SCHEDULER.enable(
+             name => '"HR"."JOB_INSERE_DATA_AGENDA"');
+*/
+END;
+
+-- Consultando a tabela AGENDA
+
+SELECT agenda_id, TO_CHAR(agenda_data,'dd/mm/yyyy hh24:mi:ss') AGENDA_DATA
+FROM   agenda
+ORDER BY agenda_id;
+
+-- Conectar como SYS
+
+-- Remover o job
+
+BEGIN
+	DBMS_SCHEDULER.DROP_JOB (
+	     job_name => '"HR"."JOB_INSERE_DATA_AGENDA"',
+	     force => TRUE);
 END;
 
 
-
-
-
-
-
-
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
