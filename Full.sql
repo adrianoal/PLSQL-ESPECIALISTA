@@ -5480,10 +5480,47 @@ exec PRC_FETCH_EMPLOYEES_CURSOR_DYNAMIC;
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+Seção 29:PL/SQL Avançado - PACKAGE DBMS_SCHEDULER
+
+94.Visão Geral da Package DBMS_SCHEDULER 
 
 
 
+ -- OBJETIVO:
+ 
+ * Aprender a usar a PAckage DBMS_SCHEDULER para agendar tarefas.
+   Ou seja, executar jobs de acordo com uma agenda.
+   
+ * A Package DBMS_SCHEDULER possui um grande número de funções e procedimentos.
+   Coletivamente estas funções são chamadas de Scheduler.
+   
+ * O Scheduler fornece grandes funcionalidades para as necessidades de agendamento de processos
+ 
+ 
+ 1º Componente da PACKAGE DBMS_SCHEDULER --> É o PROGRAM 
+ 
+ * Program: É uma coleção de metadados sobre o qual será executado pelo Scheuler
+ 
+ * Um programa pode ser uma procedure PL/SQL, um programa externo, tais como:
+   um executável C, um script Shell, uma aplicação Java e etc.
+   
+ * Vc pode especificar um lista de argumentos para um programa
+ 
+ 
+ 2º Componente da PACKAGE DBMS_SCHEDULER --> É o SCHEDULER 
 
+ * Scheduler: É o agendamento, especifica quando e por quanto tempo o job será executado.
+ 
+ 
+ 3º Componente da PACKAGE DBMS_SCHEDULER --> É o JOB
+ 
+ * JOB: É o trabalho que precisa ser executado, ou seja a associação do Program mais o Scheduler
+        Especifica o que será executado (Program) e em que período (Scheduler)
+
+ 		
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+		
 
 
 
