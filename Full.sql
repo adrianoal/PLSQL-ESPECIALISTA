@@ -5520,7 +5520,146 @@ Seção 29:PL/SQL Avançado - PACKAGE DBMS_SCHEDULER
  		
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
-		
+95.Criando um Programa 
+
+ -- CRIANDO E HABILITANDO UM PROGRAMA
+ 
+ * Para criar um programa utilize o procedimento CREATE_PROGRAM 
+ 
+ * Um programa é uma coleção de metadados sobre o que será executado pelo SCHEDULER
+ 
+ * Para executar um programa basta registrar o programa em job juntamente com um SCHEDULER
+ 
+ * Para criar um programa no seu próprio schema, é necessário o privilégio CREATE JOB
+ 
+ * Para criar um programa no schema de outro usuário, é necessário o privilégio CREATE ANY JOB
+ 
+ * Um programa por default é criado com estado desabilitado, um job não pode ser executado até
+   que o programa seja habilitado.
+ 
+ 
+  -- SINTAXE DE UM PROGRAMA
+  
+DBMS_SCHEDULER.CREATE_PROGRAM -- PACKAGEM + PROCEDURE 
+(program_name IN VARCHAR2,
+ program_type IN VARCHAR2,
+ program_action IN VARCHAR2, -- codigo do programa
+ number_of_arguments IN PLS_INTEGER default 0, -- numeros de parâmatros
+ enable 		IN BOLLEAN, -- P/ criar o programa habilitado, o default ér falso.
+ comments 		IN VARCHAR2 default NULL);  -- Uma descricao do programa, p/ documentacao
+
+	
+ -- QUAIS OS TIPOS DE PROGRAMAS QUE PODEM SER CRIADOS?
+ 
+ * O parâmetro tipo_programa inclui os seguintes valores:
+ 
+ plsql_block 	  --> P/ blocos anonimos, raramente se agenda um bloco anônimo
+ stored_procedure --> p/ procedures
+ executable		  --> p/ executaveis externos, um executável C, um script Shell, uma aplicação Java e etc.
+	
+	
+ Se o programa não foi criado habilitado, isso pode ser feito através do código abaixo:
+ 
+DBMS_SCHEDULER.ENABLE(name in VARCHAR2); -- Informar o nome do objeto a ser habilitado
+ -- Lembrado q o job só executa se o programa estiver habilitado, do contrario, dará erro.
+ 
+ 
+-- Habilitar/ Desabilitar 
+DBMS_SCHEDULER.ENABLE(name in VARCHAR2); -- Habilita
+DBMS_SCHEDULER.DISABLE(name in VARCHAR2); -- Desabilita  
+ 
+
+-- Para remover um programa:
+DBMS_SCHEDULER.DROP_PROGRAM(program_name IN VARCHAR2,
+							force IN BOOLEAN); -- Vai forcar p/ remover com valores TRUE/FALSE
+/*
+ Com a opção force true, vai remover o programa mesmo se ele tiver jobs que referenciam o 
+ programa. Se a opção force estiver false, ele não vai deixar remover um programa que é 
+ referenciado jobs.
+*/
+
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 29 - Package DBMS_SCHEDULLER
+--
+-- Aula 2 - Criando um Programa
+
+-- Criando e Habilitando um Programa
+
+-- Conectar como SYS
+
+grant CREATE JOB to hr;
+
+-- Conectar como sales
+
+DROP TABLE AGENDA;
+
+CREATE TABLE AGENDA
+(agenda_id    NUMBER,
+ agenda_data  DATE);
+
+-- SELECT * FROM AGENDA; 
+DROP SEQUENCE AGENDA_SEQ;
+ 
+CREATE SEQUENCE AGENDA_SEQ
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOMAXVALUE -- Quando nao tem valor maximo, o maximo é 10 elevado a 26
+NOCYCLE;
+
+CREATE OR REPLACE PROCEDURE PRC_INSERE_DATA_AGENDA
+IS
+BEGIN
+  INSERT INTO hr.agenda
+  VALUES (agenda_seq.NEXTVAL, sysdate);
+  COMMIT;
+END;
+
+-- Criando e Habilitado um Programa
+
+BEGIN
+    DBMS_SCHEDULER.create_program(
+        program_name => 'HR.PRC_INSERE_AGENDA', -- pode colocar o nome q quiser
+        program_action => 'HR.PRC_INSERE_DATA_AGENDA',
+        program_type => 'STORED_PROCEDURE',
+        number_of_arguments => 0, -- nao tem parametros, entao é 0
+        comments => 'Insere dados na agenda',
+        enabled => TRUE); -- estou criando já habilitado
+/*
+    DBMS_SCHEDULER.ENABLE(name=>'HR.PRC_INSERE_AGENDA');   -- Para habilitar, só rodar esse comando 
+*/
+END;
+
+-- Removendo um Programa
+
+BEGIN
+    DBMS_SCHEDULER.drop_program(
+        program_name => 'HR.PRC_INSERE_AGENDA',
+        force => TRUE);
+END;
+
+-- Criando e Habilitado um Programa
+
+BEGIN
+    DBMS_SCHEDULER.create_program(
+        program_name => 'HR.PRC_INSERE_AGENDA',
+        program_action => 'HR.PRC_INSERE_DATA_AGENDA',
+        program_type => 'STORED_PROCEDURE',
+        number_of_arguments => 0,
+        comments => 'Insere dados na agenda',
+        enabled => TRUE);
+
+    -- DBMS_SCHEDULER.ENABLE(name=>'HR.PRC_INSERE_AGENDA');    
+
+END;
+ 
+
+
+
+
+
 
 
 
