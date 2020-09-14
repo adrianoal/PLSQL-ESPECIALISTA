@@ -5871,8 +5871,136 @@ END;
 ------------------------------------------------------------------------------------------------  
 Seção 30:PL/SQL Avançado - Package UTL_FILE
 
+98.Utilizando a Package UTL_FILE para ler e gravar arquivos
 
 
+ * A PACKAGE UTL_FILE possue os comandos necessários para o desenvolvimento de rotinas para 
+   ler e escrever dados em arquivos no sistema de arquivo do sistema operacional, esse sistema 
+   de arquivos fica no servidor onde o DB está instalado, e não na minha máquina client.
+   
+ * A PACKAGE UTL_FILE está disponível desde a versão 7.3 do Oracle.
+   Com ela vc pode ler tabelas e gerar um arquivo texto, ou ao contrário, ler um arquivo texto
+   e carregar os dados em tabelas.
+   
+   Muito utilizado para fazer carga em sistemas de BUSINESS INTELIGENCE.
+   
+ * Para utilizar a PACKAGE UTL_FILE, é preciso criar um diretório no sistema operacional.
+ 
+-- Conectar como SYS 
+
+-- Sintaxe para criar um diretório:
+
+CREATE OR REPLACE DIRECTORY
+NOME_DIRECTORIO AS 
+'C:\NOME_DIRETORIO_SO';
+
+
+ * Uma vez criado o objeto DIRECTORY o DBA vai passar o privilégio para ler ou gravar ou os 
+   dois para os usuários que vão poder usar esse diretório.
+   
+    
+-- Conectar como SYS 
+
+GRANT READ, WRITE ON DIRECTORY
+NOME_DIRECTORIO TO usuario;
+
+
+
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 30 - Package UTL_FILE
+--
+-- Aula 1 - Package UTL_FILE
+
+-- Package Package UTL_FILE
+
+-- Criar o diretorio 'C:\ARQUIVOS' no Windows
+
+-- Conectar como SYS
+
+CREATE OR REPLACE DIRECTORY ARQUIVOS AS 'C:\ARQUIVOS'; -- se tivese sub-pastas teria que informa todo o caminho
+
+GRANT READ, WRITE ON DIRECTORY ARQUIVOS TO hr;
+
+-- Gravando um arquivo Texto
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  vfile  UTL_FILE.FILE_TYPE; -- essa variavel vai ser do tipo FILE_TYPE da package UTL_FILE
+  CURSOR employees_c IS
+  SELECT employee_id, first_name, last_name, job_id, salary FROM employees;
+
+-- FOPEN é uma funcao da package UTLFILE  q é utilizada para abrir o arquivo
+
+-- 'ARQUIVOS' --> Referesse ao ARQUIVOS DIRECTORY 
+-- 'employees.txt' --> Nome que eu quero dar para o aquivo de escrita
+-- w --> Pq eu quero escreve, se fosse leitura seria r
+-- 32767 Buffer do arquivo 32767 bytes
+
+BEGIN
+  vfile := UTL_FILE.FOPEN('ARQUIVOS', 'employees.txt','w',32767); -- necessario informar esses parametros
+  FOR  employees_r IN employees_c LOOP
+    UTL_FILE.PUT_LINE(vfile, employees_r.employee_id || ';' || 
+                             employees_r.first_name || ';' || 
+                             employees_r.last_name || ';' ||
+                             employees_r.job_id || ';' || 
+                             employees_r.salary);
+  END LOOP;
+  UTL_FILE.FCLOSE(vfile);
+  DBMS_OUTPUT.PUT_LINE('Arquivo Texto employees.txt gerado com sucesso');
+EXCEPTION
+  WHEN UTL_FILE.INVALID_PATH THEN
+      UTL_FILE.FCLOSE(vfile);
+      DBMS_OUTPUT.PUT_LINE('Diretório Inválido');
+  WHEN UTL_FILE.INVALID_OPERATION THEN
+      UTL_FILE.FCLOSE(vfile);
+      DBMS_OUTPUT.PUT_LINE('Operação invalida no arquivo'); -- ou seja, nao foi Read ou Write
+  WHEN UTL_FILE.WRITE_ERROR THEN
+      UTL_FILE.FCLOSE(vfile);
+      DBMS_OUTPUT.PUT_LINE('Erro de gravação no arquivo'); -- Se nao conseguir gravar
+  WHEN UTL_FILE.INVALID_MODE THEN
+      UTL_FILE.FCLOSE(vfile);
+      DBMS_OUTPUT.PUT_LINE('Modo de acesso inválido');
+  WHEN OTHERS THEN
+      UTL_FILE.FCLOSE(vfile);
+      DBMS_OUTPUT.PUT_LINE('Erro Oracle:' || SQLCODE || SQLERRM);
+END;
+
+------------------------------------------------------------------------------------------------
+-- Lendo um arquivo Texto
+
+SET SERVEROUTPUT ON
+SET VERIFY OFF
+DECLARE
+  vfile  UTL_FILE.FILE_TYPE;
+  vregistro  VARCHAR2(400); -- cada registro vai ter no maximo 400 caracter por registro
+BEGIN
+  vfile := UTL_FILE.FOPEN('ARQUIVOS', 'employees.txt','r',32767); -- 3 parametros:  Nome do objeto DIRECTRY, nome do arquivo q vai ler, o modo de leitra r 
+  LOOP  
+    UTL_FILE.GET_LINE(vfile, vregistro); -- GET_LINE lê um registro por vez e guarda na variavel --> vregistro
+    DBMS_OUTPUT.PUT_LINE(vregistro); -- Para fins didático vou imprimir o registro, mas podera fazer o q eu quiser
+  END LOOP;
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+      UTL_FILE.FCLOSE(vfile);
+      DBMS_OUTPUT.PUT_LINE('Arquivo Texto employees.txt lido com sucesso');
+  WHEN UTL_FILE.INVALID_PATH THEN
+      UTL_FILE.FCLOSE(vfile);
+      DBMS_OUTPUT.PUT_LINE('Diretório Inválido');
+  WHEN OTHERS THEN
+      UTL_FILE.FCLOSE(vfile);
+      DBMS_OUTPUT.PUT_LINE('Erro Oracle:' || SQLCODE || SQLERRM);
+END;
+ 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+
+ 
+   
+ 
 
 
 
