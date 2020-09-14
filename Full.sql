@@ -5655,8 +5655,127 @@ BEGIN
 
 END;
  
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+96.Criando uma Agenda 
 
+ -- SINTAXE PARA A CRIAÇÃO DE UMA AGENDA:
+ 
+DBMS_SCHEDULER.CREATE_SCHEDULER(scheduler_name  IN VARCHAR2,
+								start_date 	    IN VARCHAR2 DEFAULT NULL,
+								repeat_interval IN VARCHAR2, -- criterio de repeticao desse agendamento
+								end_date 		IN TIMESTAMP WITH TIMEZONE DEFAULT NULL, --encerramento desse scheduler
+								comments 		IN VARCHAR2 DEFAULT NULL
+								);
 
+ -- DBMS_SCHEDULER.CREATE_SCHEDULER:
+ 
+ * Start_date especifica quando que o schedule se tornará ativo.
+ * end_date especifica quando que o schedule ficará inativo.
+ * repeat_interval é uma expressão que se utiliza de dados do calendário ou sintaxe PL/SQL
+   onde especifica qual a frequência de execução do job.
+   
+   
+ --  A EXPRESSÃO REPEAT_INTERVAL:
+ 
+ *  A expressão repeat_nterval possui três partes:
+    * A cláusula frequência
+	* A intervalo de repetição
+	* A outra cláusula de frequencia 
+	
+	
+	-- A cláusula frequência é composta pelos seguintes elementos:
+	--------------------------------------------------------------
+	
+		 * YEARLY   --> Anoalmente
+		 * MONTHLY  --> Mensalmente 
+		 * WEEKLY   --> Semanalmente 
+		 * DAILY    --> Diariamente
+		 * HOURLY	--> De hora em Hora
+		 * MINUTELY --> De minuto em minuto
+		 * SECONDLY --> De segundo em segundo
+ 
+ 
+	-- O intervalo de repetição
+	---------------------------
+	
+		* O intervalo de repetição é configurado entre 1 e 99.
+	
+	
+	-- A outra cláusula de frequência
+	---------------------------------	
+	
+		A outra cláusula de frequência é composta pelos seguintes elementos:
+		
+		* BYMONTH 	 --> Por mês 
+		* BYWEEKNO   --> Por dia da semanda
+		* BYYEARDAY  --> Por dia do ano
+		* BYMONTHDAY -->  Por dia do mês
+		* BYDAY 	 --> Por dia do mês
+		* BYHOUR	 --> Por hora
+		* BYMINUTE   --> Por minuto 
+		* BYSECOND   --> Por segundo
+		
+		
+-- Exemplo, se eu quiser todo dia 20 do mês
+REPEAT_INTERVAL => 'FREQ=MONTHLY; -- Mensalmente
+BYMONTHDAY = 20'				  -- todo dia 20
+
+-- Como não foi definido o intervalo de repetição, por default é 1
+ 
+ 
+-- Se eu quisesse a cada 60 dias?
+REPEAT_INTERVAL => 'FREQ=DAILY;
+INTERVAL=60'
+ 
+ 
+-- EXEMPLO PRÁTICO: 
+
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 29 - Package DBMS_SCHEDULLER
+--
+-- Aula 3 - Criando uma Agenda
+
+-- Criando uma Agenda
+
+-- Conectar como SYS
+
+grant CREATE JOB to hr;
+ 
+-- Criando um Schedule (a cada 10 segundos)
+ 
+BEGIN
+    DBMS_SCHEDULER.CREATE_SCHEDULE 
+                        (schedule_name  => 'SCH_A_CADA_10_SEGUNDOS',
+                         start_date     => SYSTIMESTAMP, -- data atual no formato timestamp
+                         --start_date => TO_TIMESTAMP_TZ('2020-03-17 15:17:36.000000000 AMERICA/SAO_PAULO','YYYY-MM-DD HH24:MI:SS.FF TZR'), -- se eu fosse usar uma data fixa, teria que usar esse formato
+                         repeat_interval  => 'FREQ=SECONDLY;INTERVAL=10', -- A cada segundo de Dez em Dez segundos
+                         end_date => TO_TIMESTAMP_TZ('2020-09-14 15:00:00.000000000 AMERICA/SAO_PAULO','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+                         comments => 'A cada 10 segundos'
+                         );
+END;
+ 
+--Removendo um Schedule 
+BEGIN
+    DBMS_SCHEDULER.DROP_SCHEDULE (schedule_name  => 'SCH_A_CADA_10_SEGUNDOS',
+                                  force    => FALSE -- False ele nao remove se estiver sendo refernciado por um job
+                                  );
+END;
+
+-- Criando um Schedule (a cada 10 segundos)
+ 
+BEGIN
+    DBMS_SCHEDULER.CREATE_SCHEDULE (
+        schedule_name  => 'SCH_A_CADA_10_SEGUNDOS',
+        start_date     => SYSTIMESTAMP,
+        -- start_date => TO_TIMESTAMP_TZ('2020-03-17 15:17:36.000000000 AMERICA/SAO_PAULO','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+        repeat_interval  => 'FREQ=SECONDLY;INTERVAL=10',
+        end_date => TO_TIMESTAMP_TZ('2020-07-23 23:00:00.000000000 AMERICA/SAO_PAULO','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+        comments => 'A cada 10 segundos'
+        );
+END;
 
 
 
