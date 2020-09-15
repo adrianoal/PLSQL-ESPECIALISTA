@@ -6074,6 +6074,17 @@ DBMS_FLASHBACK.DISABLE; -- Volta para o presente.
 
 -- Conectar como SYS
 
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 31 - FLASHBACK
+--
+-- Aula 1 - Package DBMS_FLASHBACK
+
+-- Package DBMS_FLASHBACK
+
+-- Conectar como SYS
+
 grant execute on DBMS_FLASHBACK to hr;
 
 -- Conectar como hr
@@ -6114,12 +6125,12 @@ BEGIN
   DBMS_FLASHBACK.disable;  -- Posicionando de volta ao presente
 
   LOOP 
-    FETCH c_employees INTO r_employees; -- passado
+    FETCH c_employees INTO r_employees; 
     
     EXIT WHEN c_employees%NOTFOUND; 
     
     UPDATE employees 
-    SET    salary = r_employees.salary
+    SET    salary = r_employees.salary  -- Setando de acordo com os dados do passado novamente
     WHERE  employee_id = r_employees.employee_id;
     
   END LOOP; 
@@ -6134,23 +6145,121 @@ SELECT employee_id, first_name, last_name, job_id, salary
 FROM   employees
 WHERE  job_id = 'IT_PROG';
 
-
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+100.Flashback Query 
+
+ * O FLASHBACK QUERY é uma evolução da PACKAGE DBMS_FLASHBACK.
+   Essa é a forma mais fácil de consultar o passado sem ter que usar a PACKAGE DBMS_FLASHBACK.
    
+-- EXEMPLO:
+TIMESTAMP --> Para data, hora, minuto e segundo atual
+
+
+SELECT coluna|expressão [,coluna|expressão]...
+FROM tabela
+		AS OF TIMESTAMP -- Como os dados estavam no passado 
+		to_timenstamp('dd/mm/yyyy hh24:mi:ss','data hora no formato');
+   
+   OUTRA FORMA DE FAZER A MESMA COISA
+   
+SELECT coluna|expressão [,coluna|expressão]...
+FROM tabela 
+		AS OF TIMESTAMP 
+		(systimestamp - interval '5' minute);
  
  
+ Obs: INTERVAL pode ser utilizado não somente em minutos, veja a lista abaixo:
  
  
+ -- INTERVAL:
+ ------------
+ 
+ * INTERVAL 'X' 	YEAR 
+ * INTERVAL 'X' 	MONTH 
+ * INTERVAL 'X' 	DAY
+ * INTERVAL 'X' 	HOUR
+ * INTERVAL 'X' 	MINUTE
+ * INTERVAL 'X' 	SECOND
+ * INTERVAL 'X-Y' 	YEAR TO MONTH  -- Anos para mes 
+ * INTERVAL 'X Y:Z' DAY TO MINUTE  -- Dia para minito
+ * INTERVAL 'X:Y' 	HOUR TO MINUTE -- Hora para minuto 
+ * INTERVAL 'X:Y.Z' MINUTE TO SECOND -- Minuto para segundo   
+
+ -- DEMONSTRAÇÃO PRÁTICA:
+ ------------------------
+
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 31 - FLASHBACK
+--
+-- Aula 2 - Flashback Query
+
+-- Utilizando Flashback Query
+
+-- Causando um problema 
+
+SELECT employee_id, first_name, last_name, job_id, salary
+FROM   employees
+WHERE  job_id = 'FI_ACCOUNT';
+
+UPDATE employees
+SET    salary = salary * 2
+WHERE  job_id = 'FI_ACCOUNT';
+
+SELECT employee_id, first_name, last_name, job_id, salary
+FROM   employees
+WHERE  job_id = 'FI_ACCOUNT';
+
+COMMIT;
 
 
+DECLARE
+  CURSOR c_employees IS
+    SELECT *
+    FROM   employees as of timestamp (systimestamp - interval '15' minute);
+    
+  r_employees  c_employees%ROWTYPE;
+  
+BEGIN  
+  OPEN c_employees;
 
+  LOOP 
+    FETCH c_employees INTO r_employees; 
+    
+    EXIT WHEN c_employees%NOTFOUND; 
+    
+    UPDATE employees 
+    SET    salary = r_employees.salary -- r_employees.salary tem o salario anterior a 15 minutos atras
+    WHERE  employee_id = r_employees.employee_id;
+    
+  END LOOP; 
+  
+  CLOSE c_employees;
+  
+  COMMIT;
+END;
 
+-- Consultando após a correção do problema
 
+SELECT employee_id, first_name, last_name, job_id, salary
+FROM   employees
+WHERE  job_id = 'FI_ACCOUNT';
 
-
-
-
+ * A única coisa q precisa se preocupar é com o tempo que foi feito a transação indevida, porque
+   no seguimento de undo os dados são sobre postos, e isso depende de como o DBA configurou 
+   o segmento de undo e do movimento de transação para preencher a table space do segmento de 
+   undo e o parêmetro UNDO_RETENTION.
+   
+   SELECT NAME, VALUE FROM V$PARAMETER WHERE NAME  LIKE '%undo%'
+   
+   SELECT 900/60 FROM DUAL; -- 900/60 (60 -- Corresponde a uma hora)
+   
+   O que importa é o tamnho da table space de UNDO, o comando acima é apenas o parametro que
+   foi configurado pelo DBA.
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
