@@ -6475,8 +6475,125 @@ FROM hr.employees_copia2;
 ------------------------------------------------------------------------------------------------  
 Seção 32:PL/SQL Avançado - LOBs - Large Objects 
 
+103.LOBs - Introdução (Referente a objetos grandes)
 
+ * LOBs(Large Objects) permite armazenar objetos muito grandes no banco de dados.
+ 
+ * LOBs(Large Objects) permite armazenar no banco de dados, dados destruturados, tais com 
+   vídeos, áudios, fotografias, imagens, arquivos PDF, arquivos doc, arquivos de planilha excel
+   e etc.
+   
+ * LOBs(Large Objects) podem ser lidos por linhuagens de programação, tais como Java, C#, 
+   Python, e etc.
+   
+ 
+ -- DUAS CATEGORIAS TEÓRICAS DE CLASSIFICAÇÃO DE LOBS: 
+ -----------------------------------------------------
+ 
+ * LOB Interno --> São LOBs que ficam dentro do Banco de Dados 
+   * LOBs internos são armazenados no Banco de Dados, como colunas em uma tabela.
+     Participam de transações do banco de dados. 
+ 
+	-- TIPO DE LOBS INTERNO: 
+  
+	CLOB:(CHARACTER LARGE OBJEC)
+	* Utilizado p/ armazenar dados do tipo caracter single-byte.(Na lingua q o DB esta configurado)
+	* Tamanho máximo(4GB - 1)* definido pelo parâmetro DB_BLOCK_SIZE 
+		-- O resultado dessa expressão vai ser o resultado do CLOB
+    * Tamanho máximo entre 8TB e 128TB
+	* DB_BLOCK_SIZE é o parâmetro de inicialização q define o tamanho do bloco do banco de dados,
+	  que pode variar de 2KB e 32KB
+	  
+	NCLOB:(National Character Large Object)  
+	É uma variante do CLOB, porém, permite armazenar multiplos dados, ou seja, qualquel lingua 
+	do mundo, dados universal.
+		  
+	* Utilizado para armazenar dados tipo caracter multiple-byte   
+	  
+	* Tamanho máximo(4GB - 1)* definido pelo parâmetro DB_BLOCK_SIZE 
+		-- O resultado dessa expressão vai ser o resultado do CLOB
+    * Tamanho máximo entre 8TB e 128TB
+	* DB_BLOCK_SIZE é o parâmetro de inicialização q define o tamanho do bloco do banco de dados,
+	  que pode variar de 2KB e 32KB 
+	  
+	  
+	
+	BLOB:(binary large object)
+	* Utilizados para armazenar dados grandes do tipo binário.
+	  (vídeos, áudios, fotografias, imagens, arquivos PDF, arquivos doc, arquivos de planilha 
+	  excel e etc).
+	  
+	* Tamanho máximo(4GB - 1)* definido pelo parâmetro DB_BLOCK_SIZE 
+		-- O resultado dessa expressão vai ser o resultado do CLOB
+    * Tamanho máximo entre 8TB e 128TB
+	* DB_BLOCK_SIZE é o parâmetro de inicialização q define o tamanho do bloco do banco de dados,
+	  que pode variar de 2KB e 32KB
+	
+	
+  --------------------------------------------------------------------------------------------	
+  --------------------------------------------------------------------------------------------	
+ 
+ * LOBs Externo --> Lobs que ficam fora do Banco de Dados
 
+	-- TIPO DE LOBS EXTERNO: 
+ 
+	* LOBs Externos são armazenados externamente ao Banco de Dados, como arquivos do sistema
+	  de arquivos do S.O.
+	  
+	* São somente uma referência(um ponteiro) aos arquivos externos.
+    
+    * Não participam de transações do Banco de Dados.
+
+	
+ BFILE
+ 
+  * Referência um arquivo binário
+  * O BFILE(na coluna BFILE tem um ponteiro q aponta p/ o sistema de arquivo do S.O) 
+    armazena no sistema de arquivos do S.O...
+	
+  * Tamanho máximo do LOB: 4GB
+  * Tamanho máximo do nome do arquivo: 255
+  * Tamanho máximo do nome do diretório: 30 caracteres
+  
+ -- RESTRIÇÕES PARA LOBs
+ -----------------------
+ 
+ * LOBs não podem fazer parte de uma clustered table
+ 
+ * LOBs não podem ser analisados utilizando o comando ANALYZE
+												(Comando ANALYZE é para coletar estatísticas)
+ 
+ * LOBs não podem ser incluídos em um índice particionado de uma index-organized table
+ 
+ * LOBs não podem ser utilizados em um VARRY
+ 
+ * LOBs não podem ser utilizados em uma das seguintes partes de um comando SQL:
+   * GROUP BY
+   * ORDER BY
+   * SELECT DISTINCT
+   * JOINS
+   * Funções de agregação(Funções de Grupo)
+   
+   
+ -- LOB LOCATOR - LOCALIZADOR:
+ -----------------------------
+ 
+  * Todo LOB está associado com um LOB Locator(Locolizador)
+  
+  * Um LOB Locator é um ponteiro para a localização atual do valor LOB
+  
+  * O Locator associado LOB interno é chamado de LOB Locator, enquanto que o Locator associado 
+    a um arquivo externo é chamado BFILE Locator.
+	
+  * O LOB Locator é retornado quando vc realiza um SELECT de uma coluna LOB
+
+  * O valor atual do LOB pode ser recuperado utilizando o LOCALIZADOR
+  
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+ 
+  
+  
 
 
 
