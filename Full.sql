@@ -5999,11 +5999,149 @@ END;
 ------------------------------------------------------------------------------------------------  
 Seção 31:PL/SQL Avançado - FLASHBACK
 
+99.Package DBMS_FLASHBACK 
 
+
+ * A package DBMS_FLASHBACK foi introduzida no Oracle 9i
  
+ * A Package DBMS_FLASHBACK permite ao usuário uma imagem consistente do banco de dados até
+   um ponto específico no passado.
+   
+ * Esta imagem é recriada utilizando os segmentos de undo e somente está disponível se os 
+   blocos de undo ainda estiverem disponíveis.
+   
+   
+ -- Você pode utilizar a package DBMS_FLASHBACK para a seguinte utilidade:
+ -------------------------------------------------------------------------
+  
+ * Você efetivou a transação(COMMIT) e quer ver como os dados estavam anteriormente.
+ 
+ * Você pode utilizar os resultados da consulta de flashback para ajustar os dados para a 
+   situação anterior se necessário.
+   
+ * Por exemplo, vc removeu acidentalmente linhas de uma tabela, vc pode recuperar as linhas 
+   removidas.
+   Com essa package. não precisa parar todas a empresa, para restaurar o DB.
    
  
+ -- EXISTEM DOIS MÉTODOS PARA UTILIZAR A PACKAGE DBMS_FLASHBACK:
+ --------------------------------------------------------------- 
+ 
+ * Definimos um momento no tempo no passado p/ recuperação dos dados
+								ou 
+ * Utilizamos o valor do SYSTEM CHANGE NUMBER(SCN) p/ retornarmos os dados para o passado.
+ 
+ Obs: Difícil saber o (SCN), normalmente se usa baseado no tempo...
+ 
+ * O DBA deve conceder o privilégio de execução da package DBMS_FLASHBACK
 
+-- Comando p/ conceder privilégio
+GRANT EXECUTE ON DBMS_FLASHBACK TO nome_usuário;
+
+ * Para voltar ao passado utilizando a package DBMS_FLASHBACK vc utilizar a PROCEDURE 
+   ENABLE_AT_TIME.
+   
+   -- EXEMPLO:
+
+DBMS_FLASHBACK.ENABLE_AT_TIME para posicionar no passado.
+
+
+DBMS_FLASHBACK.ENABLE_AT_TIME(data); -- Informar a data q deseja voltar no passado
+ -- O resultado da consulta e armazenado na memória.
+ 
+-- Para voltar P/ o presente:
+DBMS_FLASHBACK.DISABLE para retornar ao presente.
+
+ Obs. Nunca vc vai poder mexer no passado, vc só pode arrumar o presente.
+ 
+ -- SINTAXE:
+DBMS_FLASHBACK.DISABLE; -- Volta para o presente.
+
+ 
+
+ -- EXEMPLO PRÁTICO:
+ -------------------
+ 
+ 
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 31 - FLASHBACK
+--
+-- Aula 1 - Package DBMS_FLASHBACK
+
+-- Package DBMS_FLASHBACK
+
+-- Conectar como SYS
+
+grant execute on DBMS_FLASHBACK to hr;
+
+-- Conectar como hr
+
+-- Causando um problema 
+
+SELECT employee_id, first_name, last_name, job_id, salary
+FROM   employees
+WHERE  job_id = 'IT_PROG';
+
+UPDATE employees
+SET    salary = salary * 2
+WHERE  job_id = 'IT_PROG';
+
+SELECT employee_id, first_name, last_name, job_id, salary
+FROM   employees
+WHERE  job_id = 'IT_PROG';
+
+COMMIT;
+
+-- Utilizando a Package DBMS_FLASHBACK
+
+DECLARE
+  CURSOR c_employees IS
+    SELECT *
+    FROM   employees
+    WHERE  job_id = 'IT_PROG';
+    
+   r_employees  c_employees%ROWTYPE;
+BEGIN
+  
+  DBMS_FLASHBACK.enable_at_time(sysdate - 10 / 1440);  -- Posicionando 10 minutos no passado (um dia 24h.. por isso --> 24 x 60 = 1440)
+  
+  -- Abriu o cursor no passado
+  OPEN c_employees; -- Quando vc abre o cursor a linhas recuperadas vao para a Shared Pool (Result Set)
+  
+  -- voltou p/ o presente
+  DBMS_FLASHBACK.disable;  -- Posicionando de volta ao presente
+
+  LOOP 
+    FETCH c_employees INTO r_employees; -- passado
+    
+    EXIT WHEN c_employees%NOTFOUND; 
+    
+    UPDATE employees 
+    SET    salary = r_employees.salary
+    WHERE  employee_id = r_employees.employee_id;
+    
+  END LOOP; 
+  
+  CLOSE c_employees;
+  COMMIT;
+END;
+
+-- Consultando após a correção do problema
+
+SELECT employee_id, first_name, last_name, job_id, salary
+FROM   employees
+WHERE  job_id = 'IT_PROG';
+
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+   
+ 
+ 
+ 
+ 
 
 
 
