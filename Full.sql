@@ -6249,17 +6249,136 @@ WHERE  job_id = 'FI_ACCOUNT';
 
  * A única coisa q precisa se preocupar é com o tempo que foi feito a transação indevida, porque
    no seguimento de undo os dados são sobre postos, e isso depende de como o DBA configurou 
-   o segmento de undo e do movimento de transação para preencher a table space do segmento de 
+   o segmento de undo e do movimento de transação para preencher a table pace do segmento de 
    undo e o parêmetro UNDO_RETENTION.
    
    SELECT NAME, VALUE FROM V$PARAMETER WHERE NAME  LIKE '%undo%'
    
    SELECT 900/60 FROM DUAL; -- 900/60 (60 -- Corresponde a uma hora)
    
-   O que importa é o tamnho da table space de UNDO, o comando acima é apenas o parametro que
+   O que importa é o tamnho da tablespace de UNDO, o comando acima é apenas o parametro que
    foi configurado pelo DBA.
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+101.Flashback Drop 
+
+ -- LIXEIRA:
+ -----------
+ 
+ * A única forma de usar o comando Flashback Drop dentro de um programa PL/SQL é itilizando o 
+   SQL dinâmico,porém, isso não faz sentido, é apenas para fins didático.
+   
+ * O objetivo é recuperar um objeto que foi dropado indevidamente.
+ 
+ A lixeira contém todos os objetos dropados até que:
+  * Vc elimine o objeto com o comando PURGE (Não tem porque fazer isso, se usar o comando PURGE,
+    não tem mais como recuperar da lixeira). Só se faz o PURGE se precisar de espaço em disco.
+  
+  -- RESTAURAÇÃO DE OBJETO:
+  * Vc restaure o objeto dropado com o comando BEFORE DROP 
+  
+ * A tablespace necessita ser extendida
+   Qundo um objeto é dropado indevidamente, é preciso restaurar o mais rapidamente, porque, se
+   o Oracle precisar extender a tablespace, ele pode remover esse objeto, não tem jeito.
+   
+ Você pode visualizar os objetos que estão na lixeira utilizando a seguinte visão do dicionário
+ de dados:
+ 
+ USER_RECYCLEBIN -- Todos os objetos dropados
+ ALL_RECYCLEBIN  -- Todos os meus objetos + o que tenho permissão
+ DBA_RECYCLEBIN  -- Privilégio Full, todos os objetos do DB 
+ RECYCLEBIN (Sinônimo)
+ 
+-- Para restaurar uma tabela a partir da lixeira:
+FLASHBACK TABLE nome_tabela TO BEFORE DROP;
+
+
+-- Remover um objeto da lixeira definitivamente:
+PURGE TABLE nome_tabela; -- Não vai ter como restaurar depois 
+
+-- Removendo todos os objetos do schema do meu usuário que estão na lixeira, definitivamente:
+PURGE user_recyclebin;
+
+ -- EXEMPLO PRÁTICO:
+ -------------------
+
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 31 - FLASHBACK
+--
+-- Aula 3 - Flashback Drop
+
+-- Flashback Drop
+
+-- Conecte-se como HR
+
+CREATE TABLE employees_copia 
+AS
+SELECT *
+FROM employees;
+
+SELECT *
+FROM   user_objects
+WHERE  object_name = 'EMPLOYEES_COPIA';
+
+SELECT *
+FROM employees_copia;
+
+-- Removendo um objeto
+
+DROP TABLE employees_copia; -- DROP é um DDL, os comandos DDL tem commit automático
+
+SELECT *
+FROM   user_objects
+WHERE  object_name = 'EMPLOYEES_COPIA';
+
+SELECT *
+FROM employees_copia;
+
+-- Consultando a Lixeira
+
+SELECT *
+FROM   user_recyclebin
+WHERE  original_name = 'EMPLOYEES_COPIA';
+
+-- Confimando que o objeto foi removido
+
+SELECT *
+FROM   user_objects
+WHERE object_name = 'EMPLOYEES_COPIA';
+
+-- Restaurando o Objeto a partir da Lixeira
+
+FLASHBACK TABLE EMPLOYEES_COPIA TO BEFORE DROP;
+
+ Obs: Qunado reciclamos uma tabela, se tiver índices, o Oracle recicla os índices tbm, porém,
+      vem com nomes bem estranhos, neste caso é só renomear o índice.
+	  
+ -- O QUE O ORACLE NÃO TRAS DE VOLTA AO RECICLAR UMA TABELA?
+ 
+  * O Oracle 'não' tras as constraints de Foreign Key.
+  
+    * As constraints de Primary Key, Unique e Check ele trás tudo.
+  
+ 
+
+-- Confimando que o objeto foi restaurado
+
+SELECT *
+FROM user_objects
+WHERE object_name = 'EMPLOYEES_COPIA';
+
+SELECT *
+FROM employees_copia;
+
+SELECT *
+FROM   user_recyclebin
+WHERE  original_name = 'EMPLOYEES_COPIA';
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+
 
 
 
