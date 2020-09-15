@@ -6378,6 +6378,101 @@ WHERE  original_name = 'EMPLOYEES_COPIA';
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+102.Flashback Table 
+
+ * Flashback table é mais um tipo de FLASHBACK.
+	-- Esse é o menos utilizado, só deve utilizar quando não tiver outra opção.
+	
+ * O Flashback Table permite fazer uma recuperação de uma ou mais tabelas para uma determinda
+   posição do tempo do passado sem a necessidade de se restaurar um backup do banco de dados.
+	Ex: Se alguém fez algum DML em uma tabela e efetivou a transação(commit), não tem mais 
+	    como recuperar. Então o Flashback Table volta a tabela ou as tabelas p/ um posição 
+		no passado.
+		Obs: O problema aqui é que se perde todas as referências de constraints.
+			 Esse recurso é mais para fins didático, não compesa usar hoje em dia.
+			 
+ 			 
+ * Quando vc utiliza o Flashback Table, todos os objetos associados, como índices, constraints
+   e triggers tbm são restauradas.
+   
+ -- Observação as Regras:
+ ------------------------
+ 
+ Se um dos seguintes comandos abaixo forem executados, o comando de flashback Table não poderá 
+ mais ser utilizado:
+ 
+ * ALTER TABLE... DROP COLUMN
+ * ALTER TABLE... DROP PARTITION
+ * CREATE CLUSTER
+ * TRUNCATE TABLE
+ * ALTER TABLE... MOVE 
+ 
+ -- QUAIS PRIVILÉGIOS VC DEVE POSSUIR PARA UTILIZAR FLASHBACK TABLE?
+ -------------------------------------------------------------------
+  
+ * Vc deve possuir o privilégio FLASHBACK TABLE ou FLASHBACK ANY TABLE para poder utilizar 
+   o Flashback Table.
+   
+ * Antes de executar um flashback table vc deve executar o seguinte comando, para habilitar a
+   movimentação das linhas da tabela:
+
+-- Conectado como SYS:
+GRANT FLASHBACK ON schema.nome_table TO usuário;
+        -- OU    
+GRANT FLASHBACK ANY TABLE TO usuário;
+
+		
+-- Conectado cmo SYS ou usuário OWNER da tabela:
+ALTER TABLE schema.nome_tabela ENABLE row movement;
+
+ -- EXEMPLO PRÁTICO:
+
+ 
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 31 - FLASHBACK
+--
+-- Aula 4 - Flashback Table
+
+-- Utilizando Flashback Table
+
+CREATE TABLE employees_copia2
+AS
+SELECT *
+FROM employees;
+
+--Conectado como SYS 
+GRANT FLASHBACK ON hr.employees_copia2 TO hr;
+
+--Conectado como SYS ou HR
+ALTER TABLE hr.employees_copia2 ENABLE ROW MOVEMENT; -- Esse comando e para nao mudar os rowid das linhas...
+
+-- Conectado como HR
+SELECT *
+FROM hr.employees_copia2 ;
+
+DELETE FROM hr.employees_copia2 ;
+
+COMMIT;
+
+-- Consultando a Tabela
+
+SELECT *
+FROM hr.employees_copia2 ;
+
+-- Resaurando a Tabela para posição de 5 minutos atras
+FLASHBACK TABLE hr.employees_copia2 TO TIMESTAMP systimestamp - interval '5' minute;
+
+-- Consultando a Tabela
+
+SELECT *
+FROM hr.employees_copia2;  
+ 
+ Essa solução é muito difícil ser utilizada porque contem perdas, apenas a título de 
+ conhecimento.
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
