@@ -6591,13 +6591,243 @@ Seção 32:PL/SQL Avançado - LOBs - Large Objects
   
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+104.Utilizando CLOBs 
+
+ * Utilizado para armazenar string de caracteres unicode
+  (Letras, Numeros, Caracteres especiais, pontuação e etc).
+  
+ Para criar uma coluna do tipo CLOB, na criação da tabela é só dar o nome para a coluna
+ e informar o tipo CLOB, é simples assim. Exemplo abaixo:
+ 
+ 
+CREATE TABLE job_resumes(resume_id NUMBER,
+						 first_name VARCHAR2(200),
+						 LAST_NAME VARCHAR2(200),
+						 resume CLOB
+						 );
+						 
+ Obs: você não deve colocar NULL no CLOB, ao invés de NULL você deve colocar EMPTY_CLOB,
+ exemplo abaixo:
+
+
+INSERT INTO job_resumes
+VALUES(1,'Jones',EMPTY_CLOB()); --> Lo lugar de Nulo: EMPTY_CLOB abre parenteses e fecha sem passar argumentos
+ 
  
   
-  
+ -- Qual a função EMPTY_CLOB? 
+ ----------------------------
+ 
+ EMPTY_CLOB:
+
+ A função EMPTY_CLOB ela inicializa o CLOB, ou seja ela cria o localizador para o CLOB, e 
+ o CLOB fica sem nenhum valor, porém o ponteiro(endereço) já fica criado.
+ 
+ 
+ EXEMPLO:
+ 
+INSERT INTO job_resumes VALUES(1,'Jones',EMPTY_CLOB());
 
 
+ -- CLOBs - DBMS_LOB.WRITE 
+ -------------------------
+ 
+ * Para incluir uma string de caracteres na coluna CLOB precisa utilizar a package 
+   DBMS_LOB.WRITE (WRITE é a procedure)...
+   
+   
+ SINTAXE PARA UTILIZAR ESSA PACKAGE:
+
+-- É necessário passar quatro argumentos: 
+DBMS_LOB.WRITE(lob_destino IN OUT BLOB | CLOB, --> Localizador(endereço) do lob destino
+			   tamanho IN OUT BINARY_INTEGER,  --> O tamanho do Buffer q vc quer gravar 
+			   deslocamento IN INTEGER,		   --> A posição inicial onde vc quer gravar
+			   buffer IN RAW | VARCHAR2);	   --> O Buffer de gravação
+
+			   
+ 
+
+ -- CLOBs - DBMS_LOB.READ 
+ ------------------------
+ 
+ * Para ler um LOB vc utiliza a PACKAGE DBMS_LOB.READ 
+ 
+ -- SINTAXE:
+-- É necessário passar quatro argumentos: 
+DBMS_LOB.READ(lob_origem IN OUT BLOB | CLOB, --> localizados do CLOB origem
+			  tamanho IN OUT BINARY_INTEGER, --> O tamanho do String q está lendo
+			  deslocamento IN INTEGER,		 --> Pra ler a primeira posição, por exemplo
+			  buffer IN RAW | VARCHAR2); 	 --> é o resultado da leitura
+			  
+			  
+ 
+
+ -- CLOBs - RECUPERANDO
+ 
+ * Vc pode utilizar várias funções SQL em CLOBs
+ * Quando a coluna CLOB for maior do que 100k(bytes), vc deve utilizar a package DBMS_LOB
 
 
+ -- OPERAÇÕES COM CLOB
+ ---------------------
+ 
+SELECT SUBSTR(resume,1,30) FROM job_resumes;
+
+SELECT LENGTH(resume) FROM job_resumes;
+
+
+ -- Se os CLOBs tiver mais de 100k, vc deve usar a package DBMS_LOB, exemplo, abaixo:
+ -- O ideal é sempre usar a package DBMS_LOB, porque, vc não precisa se preocupar com o tamanho
+ 
+ 
+SELECT DBMS_LOB.SUBSTR(resume,30,1) FROM job_resumes; --Quando se usa a package DBMS_LOB, tem q inverter os argumentos
+
+SELECT DBMS_LOB.GETLENGTH(resume) FROM job_resumes;
+
+
+ Uma vantega de utilizar um CLOB ao invés de uma coluna LONG é que eu só posso ter uma coluna
+ LONG por tabela, já LOBs eu posso ter quantas eu quiser.
+ 
+ Outra vantagem, é a performance, quando eu utilizo LOBs os dados da coluna LOB vão ficar em 
+ outra área,(outra tablaspace), e quando eu utilizo uma coluna LON ou LONG ROW, os dados
+ ficam dentro dos blocos de dados onde estão os dados da tabela.
+ 
+ O que é mais crítico no Oracle de performance é o I/O (Leitura e gravação).
+ O segredo de performance é diminuir o I/O(Leitura e gravação em disco), e fazer o máximo disso
+ em memória.
+ 
+ Por isso é mais eficiente usar CLOB ao invés de LONG e o BLOB ao invés do LONG ROW, a nível 
+ de performance.
+ 
+ -- VAMOS AO EXEMPLO PRÁTICO:
+ ----------------------------
+ 
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 32 - LOBs
+--
+-- Aula 2 - CLOBs
+
+-- Criando tabela com CLOBs
+
+DROP TABLE job_resumes;
+CREATE TABLE job_resumes(resume_id   NUMBER,
+                         first_name  VARCHAR2(200),
+                         last_name   VARCHAR2(200),
+                         resume      CLOB);
+ 
+ 
+INSERT INTO job_resumes VALUES (1, 'Paul', 'Jones', EMPTY_CLOB()); --Ultimo campo vai ser NULL necessário usar  EMPTY_CLOB
+COMMIT;
+-- EMPTY_CLOB --> Cria o localizador p/ a coluna CLOB
+ 
+SELECT resume_id, first_name, last_name, SUBSTR(resume,1,30) FROM   job_resumes; --SUBSTR --> pq esse campo tem menos de 100k
+
+
+-- Um exemplo usando a package DBMS_LOB, quando eu nao sei o tamanho:
+SELECT LENGTH(resume), DBMS_LOB.GETLENGTH(resume) FROM   job_resumes;
+
+SELECT DBMS_LOB.SUBSTR(resume,DBMS_LOB.GETLENGTH(resume),1) 
+FROM   job_resumes;
+
+-- Inserindo dados na coluna CLOB
+
+INSERT INTO job_resumes 
+VALUES  (2, 'Robert','Johnson' , 'Project Manager - Scrum Master, Porto Alegre, RS, Brasil');
+
+SELECT resume_id, first_name, last_name, SUBSTR(resume,1,30)
+FROM   job_resumes;
+
+SELECT LENGTH(resume), DBMS_LOB.GETLENGTH(resume)
+FROM   job_resumes;
+
+SELECT DBMS_LOB.SUBSTR(resume,DBMS_LOB.GETLENGTH(resume),1) 
+FROM   job_resumes;
+
+COMMIT;
+
+-- Exemplo de procedure que escreve usando CLOB com a package -->  DBMS_LOB.WRITE
+CREATE OR REPLACE PROCEDURE PRC_INSERE_RESUME (presume_id IN job_resumes.resume_id%TYPE, 
+                                               presume IN VARCHAR2) 
+IS
+   vresume_localizador    CLOB; -- Essa variável vai receber o localizador do CLOB e nao o conteudo
+   vTamanho_Texto         NUMBER; -- Pra definir o tamnho da Buffer
+   vDeslocamento          NUMBER;
+BEGIN
+   SELECT resume
+   INTO   vresume_localizador -- traz so localizador da coluna CLOB e nao o conteudo
+   FROM   job_resumes
+   WHERE  resume_id = presume_id
+   FOR UPDATE; -- Para fazer um lock na linha q eu quero gravar atraves da package --> DBMS_LOB
+
+   vDeslocamento := 1; -- quero gravar a partir do 1º byte
+   vTamanho_Texto := LENGTH(presume); -- o tamanho do string q quero gravar
+   
+   -- Utilizando a package para gravar: e informando os quatro parametros obrigatorio...
+   DBMS_LOB.WRITE(vresume_localizador,
+                  vTamanho_Texto,
+                  vDeslocamento,
+                  presume); -- Buffer que quero gravar, q e o curriculo que foi passado como parametro
+   COMMIT;
+END;
+
+exec PRC_INSERE_RESUME(1,'DBA - Database administrator , Porto Alegre, RS, Brasil')
+
+SELECT resume_id, first_name, last_name, SUBSTR(resume,1,30)
+FROM   job_resumes;
+
+SELECT LENGTH(resume), DBMS_LOB.GETLENGTH(resume)
+FROM   job_resumes;
+
+SELECT DBMS_LOB.SUBSTR(resume,DBMS_LOB.GETLENGTH(resume),1) -- a partir da posicao 1
+FROM   job_resumes;
+
+SELECT resume_id, 
+       first_name, 
+       last_name, 
+       LENGTH(resume), -- usando a funcao
+       DBMS_LOB.GETLENGTH(resume) -- usando a package
+FROM job_resumes;
+
+
+-- Exemplo de procedure que lê um CLOB, utilizando a package --> DBMS_LOB.READ
+CREATE OR REPLACE PROCEDURE PRC_EXIBE_RESUME(presume_id IN job_resumes.resume_id%TYPE) 
+IS
+   vresume_localizador    CLOB;
+   vTamanho_Texto         NUMBER; -- define o tamanho do buffer q quero ler
+   vDeslocamento          NUMBER; -- que vai ser a posição de onde eu quero ler
+   vTexto                 VARCHAR2(32767); -- vou ler um texto no máximo desse tamanho
+   vLoop                  NUMBER; -- para controlar as interações p/ controlar meu CLOB
+   vQuantidade            NUMBER := 1; -- a posicao do deslocamento da minha leitura
+   vExibe                 VARCHAR2(240); -- a string que quero imprimir, vou ler um CLOB, mas vou imprimir em partes
+BEGIN
+   SELECT resume
+   INTO   vresume_localizador
+   FROM   job_resumes
+   WHERE  resume_id = presume_id
+   FOR UPDATE;
+
+   vDeslocamento := 1;  -- A posicao inicial do meu deslocamento
+   vTamanho_Texto := DBMS_LOB.GETLENGTH(vresume_localizador);
+   DBMS_LOB.READ(vresume_localizador,vTamanho_Texto,vDeslocamento,vTexto); -- fazendo a leitura
+   vLoop := TRUNC((LENGTH(vTexto))/240)+1; -- p/ imprimir o texto em partes de 240
+   FOR i IN 1 .. vLoop LOOP
+     vExibe := SUBSTR(vTexto,vQuantidade,240);
+     vQuantidade := vQuantidade + 240;
+     DBMS_OUTPUT.PUT_LINE(vExibe);
+   END LOOP;
+   COMMIT;
+END;
+
+SET SERVEROUTPUT ON
+exec PRC_EXIBE_RESUME(1)
+
+exec PRC_EXIBE_RESUME(2)
+ 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+ 
 
 
 
