@@ -6919,6 +6919,74 @@ definição do tipo que fica armazenado no banco de dados.
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+109.Pipeline Table Functions 
+
+ Pipelined Functions
+ 
+ É uma alternativa para as Tables Functions, as Table Functions retornam uma collections, 
+ só que quando vc retorna uma collections, se essa collections for muito grande ela vai 
+ consumir muita memória e trafegando muitos dados no retorno.
+
+ Como podemos melhorar isso?
+ 
+ Podemos usar --> Pipelined Functions
+ 
+ * Utilizando Pipeline não há necessidade de criar grandes collections
+ 
+ * Pipeline retorna as linhas para a saída da function(Cada linha criada é retornada, uma de 
+   cada vez) com isso se economiza memória(pq não preciso criar grandes collections) e permite 
+   processamento subsequente iniciando logo após a linha ser gerada.
+
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 33 - Table Functions
+--
+-- Aula 3 - Pipeline Table Functions
+
+-- Pipeline Functions
+
+CREATE OR REPLACE FUNCTION FNC_FETCH_EMPLOYEES_TABLE_PIPELINE
+  (pdepartment_id IN NUMBER)
+   RETURN employees_table
+   PIPELINED -- Preciso colocar esse argumento, p dizer q vou retornar uma linha por vez
+IS 
+  v_employees_table  employees_table := employees_table();
+BEGIN
+  FOR e IN 
+    (SELECT employee_id, first_name, last_name, email, phone_number, hire_date, job_id, 
+            salary, commission_pct, manager_id, department_id
+     FROM   employees
+     WHERE  department_id = pdepartment_id)
+  LOOP
+    PIPE ROW(employees_row(e.employee_id,   -- PIPE ROW --> Sig. q vai retornar uma linha
+						   e.first_name, 
+						   e.last_name, 
+						   e.email, 
+						   e.phone_number,
+                           e.hire_date, 
+						   e.job_id, 
+						   e.salary, 
+						   e.commission_pct, 
+						   e.manager_id, 
+                           e.department_id)
+			 );
+  END LOOP;
+END;
+
+ Obs: Note q para cada interação é retonado um alinha com o PIPE ROW, a funcionalidade é a 
+ mesma, porém, em vez de popular um collection que poderia ser bem grande, e retornar toda
+ a collection, o Pipelined Function vai retornando uma linha de cada vez, ou seja, o programa
+ economiza memória ao retornar linha a linha.
+ 
+ 
+-- Utilizando a Pipelined Function
+
+SELECT *
+FROM   TABLE(FNC_FETCH_EMPLOYEES_TABLE_PIPELINE(60));
+  
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
