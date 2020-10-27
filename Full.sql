@@ -6877,8 +6877,48 @@ CREATE TYPE employees_row IS TABLE OF employees_row;
 
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+108.Table Functions 
+
+--
+-- Oracle PL/SQL Avançado 
+--
+-- Seção 33 - Table Functions
+--
+-- Aula 2 - Table Functions
+
+-- Table Functions
+
+CREATE OR REPLACE FUNCTION FNC_FETCH_EMPLOYEES_TABLE
+  (pdepartment_id IN NUMBER)
+   RETURN employees_table  -- Referece ao tipo table q criamos na aula anterior(Retorna uma collection inteira pq esta armazenada no DB)
+IS 
+  v_employees_table  employees_table := employees_table();
+BEGIN
+  FOR e IN 
+    (SELECT employee_id, first_name, last_name, email, phone_number, hire_date, job_id, 
+            salary, commission_pct, manager_id, department_id
+     FROM   employees
+     WHERE  department_id = pdepartment_id)
+  LOOP
+    v_employees_table.EXTEND; -- Eu vou estender uma ocorrencia da minha collection, pq ela é uma Nested Table, então antes de atribuir um valor eu preciso alocar a ocorrencia com Extend.
+    v_employees_table(v_employees_table.LAST) := employees_row(e.employee_id, e.first_name, e.last_name, e.email, e.phone_number,
+                                                                e.hire_date, e.job_id, e.salary, e.commission_pct, e.manager_id, 
+                                                                e.department_id);
+  END LOOP;
+  RETURN v_employees_table;
+END;
+
+-- Utilizando a Table Function
+
+SELECT *
+FROM   TABLE(FNC_FETCH_EMPLOYEES_TABLE(60));
+
+ Note que isso é uma collection, os dados não ficam armazenados no banco de dados, só a 
+definição do tipo que fica armazenado no banco de dados.
 
 
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
 
 
 
