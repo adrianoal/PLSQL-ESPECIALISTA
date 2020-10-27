@@ -6827,9 +6827,64 @@ exec PRC_EXIBE_RESUME(2)
  
 ------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------  
+Seção 33:PL/SQL Avançado - Table Functions 
+
+107.Criação de Objetos 
+
+Tipo Record 
+
+ * Tipo Record é uma estrutura na memória composta de campos, ou seja tem a mesma estrutura de 
+uma tabela física, porém, um tipo Record é definido na seção Declare de um bloco anônimo ou
+de uma procedure ou de uma Function, e o escopo é só pode ser referenciado dentro do 
+Objeto(bloco anônimo,procedure ou function)ou sub-blocos.
+
+ Eu posso criar um tipo que seja permanente no Banco de dados:
  
+ Para isso eu crio um tipo Object, exemplo:
+
+--DROP TYPE employees_row;
+CREATE TYPE employees_row AS OBJECT( e_employee_id   NUMBER  (6),
+									 e_first_name    VARCHAR2(20),
+									 e_last_name     VARCHAR2(25),
+									 e_email         VARCHAR2(25),
+									 e_phone_number  VARCHAR2(20),
+									 e_hire_date     DATE,
+									 e_job_id        VARCHAR2(10),
+									 e_salary        NUMBER  (8,2),
+									 e_commission_pct NUMBER (2,2),
+									 e_manager_id     NUMBER (6,0),
+									 e_department_id  NUMBER (4,0)
+									);
+									 
+									 
+  
+-- Criação de Table utilizando Tipos no Banco de Dados
+--DROP TYPE employees_table;
+CREATE TYPE employees_table IS TABLE OF employees_row;
 
 
+ Esse tipo object eu posso referenciar através de qualquer procedure function...
+ 
+ Uma vez criado um tipo Record Object que é semelhante ao tipo IS RECORD, eu posso criar tbm
+uma colection do tipo tabela:  Is Table Of.(A mesma coisa q a Nested Table)
+
+ Exemplo:
+ 
+CREATE TYPE employees_row IS TABLE OF employees_row;  
+  Vai ser uma collection de RECORDS armazenada permanentemente no DB Oracle, para cada linha 
+  eu vou ter todos os campos da tabela...
+  
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------  
+
+
+
+
+
+
+
+ 
 
 
 
